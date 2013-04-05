@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>StackExchange.NetGain</id>
+    <version>1.0.0.0</version>
+    <authors>SE inc</authors>
+    <owners>SE inc</owners>
+    <summary>Asynchronous TCP service, including inbuilt web-socket support</summary>
+    <description>Asynchronous TCP service, including inbuilt web-socket support</description>
+    <tags>Websockets</tags>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="bin\Release\StackExchange.NetGain.*" target="lib" />
+  </files>
+</package>

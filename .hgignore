@@ -1,0 +1,13 @@
+syntax:glob
+bin/*
+obj/*
+StackExchange.NetGain.suo
+TestResults/*
+syntax: glob
+*.docstates
+StakcExchange.NetGain.sln.docstates.suo
+_ReSharper.*
+*.user
+*.v11.suo
+*.orig
+StackExchange.NetGain.*.nupkg
