@@ -400,7 +400,7 @@ MoreToRead:
                 {
                     var state = ProtocolFactory.CreateConnection(newSocket.LocalEndPoint) ?? new Connection();
                     state.Prepare(); // logs LastSeen; generates new id
-                    WriteLog("accepted from " + newSocket.RemoteEndPoint + " to " + newSocket.LocalEndPoint, state);
+                    // WriteLog("accepted from " + newSocket.RemoteEndPoint + " to " + newSocket.LocalEndPoint, state);
                     var processor = ProtocolFactory.GetProcessor();
                     state.SetProtocol(processor);
                     processor.InitializeInbound(Context, state); 
