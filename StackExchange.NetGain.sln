@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackExchange.NetGain", "StackExchange.NetGain\StackExchange.NetGain.csproj", "{23524A2E-1C3A-431E-B95D-6C77DBA7F619}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackExchange.NetGain.Console", "StackExchange.NetGain.Console\StackExchange.NetGain.Console.csproj", "{92751532-36B0-4B41-9ACA-3BA25C3D9CBB}"

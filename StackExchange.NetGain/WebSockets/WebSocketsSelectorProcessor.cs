@@ -31,7 +31,7 @@ namespace StackExchange.NetGain.WebSockets
             var headers = ParseHeaders(input, out requestLine);
             string host = headers["Host"];
 
-            context.Handler.WriteLog(host + ": " + requestLine, conn);
+            // context.Handler.WriteLog(host + ": " + requestLine, conn);
 
             //The "Request-URI" of the GET method [RFC2616] is used to identify the
             //endpoint of the WebSocket connection, both to allow multiple domains
@@ -101,7 +101,7 @@ namespace StackExchange.NetGain.WebSockets
                             throw new InvalidOperationException(string.Format("Sec-WebSocket-Version {0} is not supported", version));
                     }
                 }
-
+                
                 if(headers.ContainsKey("x-forwarded-for"))
                 {
                     context.Handler.WriteLog("forwarded for: " + headers["x-forwarded-for"], conn);

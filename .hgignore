@@ -9,5 +9,7 @@ StakcExchange.NetGain.sln.docstates.suo
 _ReSharper.*
 *.user
 *.v11.suo
+*.v12.suo
+*.sln.ide
 *.orig
 StackExchange.NetGain.*.nupkg
