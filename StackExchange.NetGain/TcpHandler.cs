@@ -147,6 +147,11 @@ AcceptMore:
                     }
                     else
                     {
+                        if (args.LastOperation == SocketAsyncOperation.Accept)
+                        {
+                            var connectSocket = (Socket)args.UserToken;
+                            OnAcceptFailed(args, connectSocket);
+                        }
                         CloseSocket(args);
                     }
                 }
@@ -161,6 +166,8 @@ AcceptMore:
                 if (gotTheConch) concurrentOperations.Release();
             }
         }
+        protected virtual void OnAcceptFailed(SocketAsyncEventArgs args, Socket socket)
+        {}
         protected virtual void OnFlushed(Connection connection)
         { }
         private void SendCompleted(SocketAsyncEventArgs args)

@@ -102,6 +102,28 @@ namespace StackExchange.NetGain.Tests
         }
 
         [Test]
+        public void ResurrectsListeners()
+        {
+            using (var client = new TcpClient())
+            {
+                client.ProtocolFactory = WebSocketClientFactory.Hixie76;
+                client.Open(new IPEndPoint(IPAddress.Loopback, 20000));
+                string resp = (string)client.ExecuteSync("abcdefg");
+                Assert.AreEqual("gfedcba", resp);
+            }
+
+            server.KillAllListeners();
+            Thread.Sleep(1000); // allow async stuff to happen
+            using (var client = new TcpClient())
+            {
+                client.ProtocolFactory = WebSocketClientFactory.Hixie76;
+                client.Open(new IPEndPoint(IPAddress.Loopback, 20000));
+                string resp = (string)client.ExecuteSync("abcdefgh");
+                Assert.AreEqual("hgfedcba", resp);
+            }
+        }
+
+        [Test]
         public void RespondToMicrosoftWebSocketClient()
         {
             using(var socket = new ClientWebSocket())

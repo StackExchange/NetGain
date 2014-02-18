@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Linq;
 namespace StackExchange.NetGain
 {
     public class TcpServer : TcpHandler
@@ -13,7 +13,7 @@ namespace StackExchange.NetGain
         private IMessageProcessor messageProcessor;
         public IMessageProcessor MessageProcessor { get { return messageProcessor; } set { messageProcessor = value; } }
 
-        private Socket[] connectSockets;
+        private Tuple<Socket, EndPoint>[] connectSockets;
         public TcpServer(int concurrentOperations = 0) : base(concurrentOperations)
         {
             
@@ -49,8 +49,9 @@ namespace StackExchange.NetGain
             }
             if (connectSockets != null)
             {
-                foreach (var connectSocket in connectSockets)
+                foreach (var tuple in connectSockets)
                 {
+                    var connectSocket = tuple.Item1;
                     if (connectSocket == null) continue;
                     EndPoint endpoint = null;
                     
@@ -82,22 +83,77 @@ namespace StackExchange.NetGain
             if (endpoints == null || endpoints.Length == 0) throw new ArgumentNullException("endpoints");
 
             if (connectSockets != null) throw new InvalidOperationException("Already started");
-            connectSockets = new Socket[endpoints.Length];
+
+            connectSockets = new Tuple<Socket, EndPoint>[endpoints.Length];
             var tmp = messageProcessor;
             if(tmp != null) tmp.StartProcessor(Context, configuration);
             for (int i = 0; i < endpoints.Length; i++)
             {
                 Console.WriteLine("{0}\tService starting: {1}", Connection.GetConnectIdent(endpoints[i]), endpoints[i]);
-                var connectSocket = new Socket(endpoints[i].AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                connectSocket.Bind(endpoints[i]);
+                EndPoint endpoint = endpoints[i];
+                Socket connectSocket = StartAcceptListener(endpoint);
+                if (connectSocket == null) throw new InvalidOperationException("Unable to start all endpoints");
+                connectSockets[i] = Tuple.Create(connectSocket, endpoint);
+            }
+
+            timer = new System.Threading.Timer(Heartbeat, null, LogFrequency, LogFrequency);
+        }
+        protected override void OnAcceptFailed(SocketAsyncEventArgs args, Socket socket)
+        {
+            try
+            {
+                base.OnAcceptFailed(args, socket);
+
+                for(int i = 0; i < connectSockets.Length; i++)
+                {
+                    if(ReferenceEquals(connectSockets[i].Item1, socket))
+                    {
+                        var endpoint = connectSockets[i].Item2;
+                        try
+                        {
+                            Console.Error.WriteLine("Restarting listener on " + endpoint + "...");
+                            connectSockets[i] = Tuple.Create(StartAcceptListener(endpoint), endpoint);
+                            Console.Error.WriteLine("Restarted listener on " + endpoint + "...");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine("Restart failed on " + endpoint + ":" + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.Error.WriteLine("Epic fail in OnAcceptFailed: " + ex.Message);
+            }
+        }
+
+        public void KillAllListeners()
+        {
+            for(int i = 0; i < connectSockets.Length; i++)
+            {
+                var tuple = connectSockets[i];
+                var sock = tuple == null ? null : tuple.Item1;
+                if (sock != null) sock.Close();
+            }
+        }
+
+        private Socket StartAcceptListener(EndPoint endpoint)
+        {
+            try
+            {
+                var connectSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                connectSocket.Bind(endpoint);
                 connectSocket.Listen(Backlog);
                 var args = Context.GetSocketArgs();
                 args.UserToken = connectSocket; // the state on each connect attempt is the originating socket
                 StartAccept(args);
-                connectSockets[i] = connectSocket;
+                return connectSocket;
+            } catch(Exception ex)
+            {
+                Console.Error.WriteLine("Unable to start listener on " + endpoint.ToString() + ": " + ex.Message);
+                return null;
             }
-            
-            timer = new System.Threading.Timer(Heartbeat, null, LogFrequency, LogFrequency);
         }
 
         public override void OnAuthenticate(Connection connection, StringDictionary claims)
