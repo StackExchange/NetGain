@@ -147,12 +147,12 @@ AcceptMore:
                     }
                     else
                     {
+                        CloseSocket(args);
                         if (args.LastOperation == SocketAsyncOperation.Accept)
                         {
                             var connectSocket = (Socket)args.UserToken;
                             OnAcceptFailed(args, connectSocket);
                         }
-                        CloseSocket(args);
                     }
                 }
                 else
