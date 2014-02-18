@@ -289,8 +289,14 @@ namespace StackExchange.NetGain
 
         internal static string GetIdent(SocketAsyncEventArgs args)
         {
-            Connection connection = args == null ? null : args.UserToken as Connection;
-            return GetIdent(connection);
+            try
+            {
+                Connection connection = args == null ? null : args.UserToken as Connection;
+                return GetIdent(connection);
+            } catch
+            {
+                return "n/a";
+            }
         }
         internal static string GetAuditTimestamp()
         {

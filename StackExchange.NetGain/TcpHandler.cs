@@ -98,12 +98,20 @@ namespace StackExchange.NetGain
         private readonly Semaphore concurrentOperations;
         internal void StartAccept(SocketAsyncEventArgs args)
         {
-            args.AcceptSocket = null; // make sure cleared
-            var connectSocket = (Socket)args.UserToken;
-            if (!connectSocket.AcceptAsync(args))
+AcceptMore:
+            try
             {
-                // one was hot; process now
-                AcceptCompleted(args);
+                args.AcceptSocket = null; // make sure cleared
+                var connectSocket = (Socket)args.UserToken;
+                if (!connectSocket.AcceptAsync(args))
+                {
+                    // one was hot; process now
+                    AcceptCompleted(args, false);
+                    goto AcceptMore; // this is to prevent a stack dive
+                }
+            } catch(Exception ex)
+            {
+                Console.Error.WriteLine("{0}\tStartAccept **CRITICAL**: {1}", Connection.GetIdent(args), ex.Message);
             }
         }
         private void AsyncHandler(object sender, SocketAsyncEventArgs args)
@@ -124,7 +132,7 @@ namespace StackExchange.NetGain
                         switch (args.LastOperation)
                         {
                             case SocketAsyncOperation.Accept:
-                                AcceptCompleted(args);
+                                AcceptCompleted(args, true);
                                 break;
                             case SocketAsyncOperation.Receive:
                                 ReceiveCompleted(args);
@@ -386,7 +394,7 @@ MoreToRead:
 
         public IProtocolFactory ProtocolFactory { get; set; }
         
-        private void AcceptCompleted(SocketAsyncEventArgs args)
+        private void AcceptCompleted(SocketAsyncEventArgs args, bool startMore)
         {
             Interlocked.Increment(ref totalConnections);
             try
@@ -417,7 +425,10 @@ MoreToRead:
             {
                 Console.Error.WriteLine("{0}\tAccept: {1}", Connection.GetIdent(args), ex.Message);
             }
-            StartAccept(args); // look for other clients too
+            if (startMore)
+            {
+                StartAccept(args); // look for other clients too
+            }
         }
 
 
