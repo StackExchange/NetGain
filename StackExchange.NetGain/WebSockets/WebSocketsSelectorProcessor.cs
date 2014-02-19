@@ -133,7 +133,7 @@ namespace StackExchange.NetGain.WebSockets
                         var sb = new StringBuilder("Failing request: ").AppendLine(requestLine);
                         foreach (string key in headers.Keys)
                         {
-                            sb.AppendFormat(@"{0}:\t{1}", key, headers[key]).AppendLine();
+                            sb.AppendFormat("{0}:\t{1}", key, headers[key]).AppendLine();
                         }
                         Console.Error.WriteLine(sb);
                     }
