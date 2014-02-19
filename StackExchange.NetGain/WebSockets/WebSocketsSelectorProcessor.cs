@@ -123,10 +123,10 @@ namespace StackExchange.NetGain.WebSockets
                     }
                 }
                 
-                if(headers.ContainsKey("x-forwarded-for"))
-                {
-                    context.Handler.WriteLog("forwarded for: " + headers["x-forwarded-for"], conn);
-                }
+                //if(headers.ContainsKey("x-forwarded-for"))
+                //{
+                //    context.Handler.WriteLog("forwarded for: " + headers["x-forwarded-for"], conn);
+                //}
                 
                 if (processExtensions)
                 {
