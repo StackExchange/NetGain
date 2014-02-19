@@ -127,6 +127,16 @@ namespace StackExchange.NetGain.WebSockets
 
                 if (!TryBasicResponse(context, headers, requestLine, responseHeaders, out code, out body))
                 {
+                    if ((failSockets++ % 100) == 0)
+                    {
+                        // DUMP HEADERS
+                        var sb = new StringBuilder("Failing request: ").AppendLine(requestLine);
+                        foreach (string key in headers.Keys)
+                        {
+                            sb.AppendFormat(@"{0}:\t{1}", key, headers[key]).AppendLine();
+                        }
+                        Console.Error.WriteLine(sb);
+                    }
                     throw new InvalidOperationException("Request was not a web-socket upgrade request; connection: " + headers["Connection"] + ", upgrade: " + headers["Upgrade"]);
                 }
                 else
@@ -147,19 +157,12 @@ namespace StackExchange.NetGain.WebSockets
                     connection.Send(context, resp.ToString());
                     newProcessor.SendShutdown(context);
                     connection.PromptToSend(context);
+                    throw new CloseSocketException();
                 }
-                /* DUMP HEADERS
-                Console.Error.WriteLine("Cannot process");
-                var sb = new StringBuilder();
-                foreach(string key in headers.Keys)
-                {
-                    sb.AppendFormat(@"{0}:\t{1}", key, headers[key]).AppendLine();
-                }
-                Console.Error.WriteLine(sb);*/
-                throw new InvalidOperationException("Request was not a web-socket upgrade request; connection: " + headers["Connection"] + ", upgrade: " + headers["Upgrade"]);
             }
         }
-
+        
+        uint failSockets = 0;
         
         protected virtual bool TryBasicResponse(NetContext context, StringDictionary requestHeaders, string requestLine, StringDictionary responseHeaders, out HttpStatusCode code, out string body)
         {

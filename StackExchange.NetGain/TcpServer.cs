@@ -98,26 +98,75 @@ namespace StackExchange.NetGain
 
             timer = new System.Threading.Timer(Heartbeat, null, LogFrequency, LogFrequency);
         }
+
+        private void ResurrectDeadListeners()
+        {
+            bool haveLock = false;
+            try
+            {
+                Monitor.TryEnter(connectSockets, 100, ref haveLock);
+                if(haveLock)
+                {
+                    for(int i = 0; i < connectSockets.Length;i++)
+                    {
+                        if(connectSockets[i].Item1 == null)
+                        {
+                            ResurrectListenerAlreadyHaveLock(i);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (haveLock) Monitor.Exit(connectSockets);
+            }
+        }
+
+        void ResurrectListenerAlreadyHaveLock(int i)
+        {
+            var endpoint = connectSockets[i].Item2;
+            try
+            {
+                Console.Error.WriteLine("Restarting listener on " + endpoint + "...");
+                var newSocket = StartAcceptListener(endpoint);
+                connectSockets[i] = Tuple.Create(newSocket, endpoint);
+                if (newSocket == null)
+                {
+                    Console.Error.WriteLine("Unable to restart listener on " + endpoint + "...");
+                }
+                else
+                {
+                    Console.Error.WriteLine("Restarted listener on " + endpoint + "...");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Restart failed on " + endpoint + ":" + ex.Message);
+            }
+        }
         protected override void OnAcceptFailed(SocketAsyncEventArgs args, Socket socket)
         {
             try
             {
                 base.OnAcceptFailed(args, socket);
 
-                for(int i = 0; i < connectSockets.Length; i++)
+                Console.Error.WriteLine("Listener failure: " + args.SocketError);
+
+                lock(connectSockets)
                 {
-                    if(ReferenceEquals(connectSockets[i].Item1, socket))
+                    for (int i = 0; i < connectSockets.Length; i++)
                     {
-                        var endpoint = connectSockets[i].Item2;
-                        try
+                        if (ReferenceEquals(connectSockets[i].Item1, socket))
                         {
-                            Console.Error.WriteLine("Restarting listener on " + endpoint + "...");
-                            connectSockets[i] = Tuple.Create(StartAcceptListener(endpoint), endpoint);
-                            Console.Error.WriteLine("Restarted listener on " + endpoint + "...");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine("Restart failed on " + endpoint + ":" + ex.Message);
+                            // clearly mark it as dead (makes it easy to spot in heartbeat)
+                            connectSockets[i] = Tuple.Create((Socket)null, connectSockets[i].Item2);
+
+                            if (ImmediateReconnectListeners)
+                            {
+                                // try to resurrect promptly, but there's a good chance this will fail
+                                // and will be handled by heart-beat
+                                ResurrectListenerAlreadyHaveLock(i);
+                            }
                         }
                     }
                 }
@@ -130,11 +179,14 @@ namespace StackExchange.NetGain
 
         public void KillAllListeners()
         {
-            for(int i = 0; i < connectSockets.Length; i++)
+            lock(connectSockets)
             {
-                var tuple = connectSockets[i];
-                var sock = tuple == null ? null : tuple.Item1;
-                if (sock != null) sock.Close();
+                for (int i = 0; i < connectSockets.Length; i++)
+                {
+                    var tuple = connectSockets[i];
+                    var sock = tuple == null ? null : tuple.Item1;
+                    if (sock != null) sock.Close();
+                }
             }
         }
 
@@ -204,22 +256,38 @@ namespace StackExchange.NetGain
             base.OnReceived(connection, value);
         }
 
+        private readonly object heartbeatLock = new object();
+        public void Heartbeat()
+        {
+            lock(heartbeatLock) // don't want timer and manual invoke conflicting
+            {
+                var tmp = messageProcessor;
+                if (tmp != null)
+                {
+                    try
+                    {
+                        tmp.Heartbeat(Context);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("{0}\tHeartbeat: {1}", Connection.GetHeartbeatIdent(), ex.Message);
+                    }
+                }
+                ResurrectDeadListeners();
+                WriteLog();
+            }
+        }
+        private bool immediateReconnectListeners = true;
+        public bool ImmediateReconnectListeners
+        {
+            get { return immediateReconnectListeners; }
+            set { immediateReconnectListeners = value; }
+        }
         private void Heartbeat(object sender)
         {
-            var tmp = messageProcessor;
-            if (tmp != null)
-            {
-                try
-                {
-                    tmp.Heartbeat(Context);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("{0}\tHeartbeat: {1}", Connection.GetHeartbeatIdent(), ex.Message);
-                }
-            }
-            WriteLog();
+            Heartbeat();
         }
+
 
         private int broadcastCounter;
         public override string BuildLog()

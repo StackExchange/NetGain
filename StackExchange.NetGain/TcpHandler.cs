@@ -392,6 +392,10 @@ MoreToRead:
                     CloseSocket(args);
                 }
             }
+            catch (CloseSocketException)
+            { // fairly clean exit
+                CloseSocket(args);
+            }
             catch (Exception ex)
             {
                 Console.Error.WriteLine("{0}\tReceive: {1}", Connection.GetIdent(args), ex.Message);
@@ -545,4 +549,5 @@ MoreToRead:
             Console.WriteLine("{0}\t{1}", connection == null ? Connection.GetAuditTimestamp() : Connection.GetIdent(connection), line);
         }
     }
+    internal sealed class CloseSocketException : Exception { }
 }

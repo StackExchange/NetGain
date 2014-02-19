@@ -112,8 +112,12 @@ namespace StackExchange.NetGain.Tests
                 Assert.AreEqual("gfedcba", resp);
             }
 
+            server.ImmediateReconnectListeners = false;
             server.KillAllListeners();
-            Thread.Sleep(1000); // allow async stuff to happen
+            Thread.Sleep(500);
+            server.Heartbeat();
+            Thread.Sleep(500); // give it time to spin up!
+
             using (var client = new TcpClient())
             {
                 client.ProtocolFactory = WebSocketClientFactory.Hixie76;
