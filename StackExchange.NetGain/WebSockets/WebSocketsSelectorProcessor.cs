@@ -56,7 +56,24 @@ namespace StackExchange.NetGain.WebSockets
             }
 
             bool looksGoodEnough = false;
-            if(AllowClientsMissingConnectionHeaders)
+            // mozilla sends "keep-alive, Upgrade"; let's make it more forgiving
+            var connectionParts = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+            if (headers.ContainsKey("Connection"))
+            {
+                // so for mozilla, this will be the set {"keep-alive", "Upgrade"}
+                var parts = headers["Connection"].Split(Comma);
+                foreach (var part in parts) connectionParts.Add(part.Trim());
+            }
+            if (connectionParts.Contains("Upgrade") && string.Equals(headers["Upgrade"], "websocket", StringComparison.InvariantCultureIgnoreCase))
+            {
+                //5.   The request MUST contain an |Upgrade| header field whose value
+                //MUST include the "websocket" keyword.
+                //6.   The request MUST contain a |Connection| header field whose value
+                //MUST include the "Upgrade" token.
+                looksGoodEnough = true;
+            }
+
+            if(!looksGoodEnough && AllowClientsMissingConnectionHeaders)
             {
                 if((headers.ContainsKey("Sec-WebSocket-Version") && headers.ContainsKey("Sec-WebSocket-Key"))
                     || (headers.ContainsKey("Sec-WebSocket-Key1") && headers.ContainsKey("Sec-WebSocket-Key2")))
@@ -64,28 +81,6 @@ namespace StackExchange.NetGain.WebSockets
                     looksGoodEnough = true;
                 }
             }
-            else
-            {
-                // mozilla sends "keep-alive, Upgrade"; let's make it more forgiving
-                var connectionParts = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-                if (headers.ContainsKey("Connection"))
-                {
-                    // so for mozilla, this will be the set {"keep-alive", "Upgrade"}
-                    var parts = headers["Connection"].Split(Comma);
-                    foreach (var part in parts) connectionParts.Add(part.Trim());
-                }
-                if (connectionParts.Contains("Upgrade")
-                && string.Equals(headers["Upgrade"], "websocket", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    //5.   The request MUST contain an |Upgrade| header field whose value
-                    //MUST include the "websocket" keyword.
-                    //6.   The request MUST contain a |Connection| header field whose value
-                    //MUST include the "Upgrade" token.
-
-                    looksGoodEnough = true;
-                }
-            }
-            
 
             if(looksGoodEnough)
             {
