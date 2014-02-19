@@ -127,6 +127,25 @@ namespace StackExchange.NetGain.WebSockets
 
                 if (!TryBasicResponse(context, headers, requestLine, responseHeaders, out code, out body))
                 {
+                    // does it look a lot like a proxy server?
+                    bool isProxy = headers.ContainsKey("via");
+                    if(!isProxy)
+                    {
+                        foreach(string key in headers.Keys)
+                        {
+                            if(key.EndsWith("-via"))
+                            {
+                                isProxy = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(isProxy)
+                    {
+                        throw new CloseSocketException(); // no need to log this
+                    }
+
+
                     if ((failSockets++ % 100) == 0)
                     {
                         // DUMP HEADERS
