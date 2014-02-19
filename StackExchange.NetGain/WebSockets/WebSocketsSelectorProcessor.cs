@@ -25,6 +25,8 @@ namespace StackExchange.NetGain.WebSockets
             // high priority while connecting; downgrade later
             connection.HighPriority = true;
         }
+
+        protected virtual bool AllowClientsMissingConnectionHeaders { get {  return false; } }
         protected override int ProcessHeadersAndUpgrade(NetContext context, Connection conn, Stream input, Stream additionalData, int additionalOffset)
         {
             string requestLine;
@@ -52,22 +54,41 @@ namespace StackExchange.NetGain.WebSockets
                 //using the default port).
                 throw new InvalidOperationException("host required");
             }
-            // mozilla sends "keep-alive, Upgrade"; let's make it more forgiving
-            var connectionParts = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-            if(headers.ContainsKey("Connection"))
-            {
-                // so for mozilla, this will be the set {"keep-alive", "Upgrade"}
-                var parts = headers["Connection"].Split(Comma);
-                foreach (var part in parts) connectionParts.Add(part.Trim());
-            }
-            if (connectionParts.Contains("Upgrade")
-                && string.Equals(headers["Upgrade"], "websocket", StringComparison.InvariantCultureIgnoreCase))
-            {
-                //5.   The request MUST contain an |Upgrade| header field whose value
-                //MUST include the "websocket" keyword.
-                //6.   The request MUST contain a |Connection| header field whose value
-                //MUST include the "Upgrade" token.
 
+            bool looksGoodEnough = false;
+            if(AllowClientsMissingConnectionHeaders)
+            {
+                if((headers.ContainsKey("Sec-WebSocket-Version") && headers.ContainsKey("Sec-WebSocket-Key"))
+                    || (headers.ContainsKey("Sec-WebSocket-Key1") && headers.ContainsKey("Sec-WebSocket-Key2")))
+                {
+                    looksGoodEnough = true;
+                }
+            }
+            else
+            {
+                // mozilla sends "keep-alive, Upgrade"; let's make it more forgiving
+                var connectionParts = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+                if (headers.ContainsKey("Connection"))
+                {
+                    // so for mozilla, this will be the set {"keep-alive", "Upgrade"}
+                    var parts = headers["Connection"].Split(Comma);
+                    foreach (var part in parts) connectionParts.Add(part.Trim());
+                }
+                if (connectionParts.Contains("Upgrade")
+                && string.Equals(headers["Upgrade"], "websocket", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    //5.   The request MUST contain an |Upgrade| header field whose value
+                    //MUST include the "websocket" keyword.
+                    //6.   The request MUST contain a |Connection| header field whose value
+                    //MUST include the "Upgrade" token.
+
+                    looksGoodEnough = true;
+                }
+            }
+            
+
+            if(looksGoodEnough)
+            {
                 //9.   The request MUST include a header field with the name
                 //|Sec-WebSocket-Version|.  The value of this header field MUST be
                 WebSocketsProcessor newProtocol;
