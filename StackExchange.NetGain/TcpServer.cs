@@ -29,8 +29,11 @@ namespace StackExchange.NetGain
             Stop();
             base.Close();
         }
+        private volatile bool stopped;
+        public bool IsStopped {  get {  return stopped; } }
         public void Stop()
         {
+            stopped = true;
             if (timer != null)
             {
                 timer.Dispose();
@@ -101,6 +104,7 @@ namespace StackExchange.NetGain
 
         private void ResurrectDeadListeners()
         {
+            if (IsStopped) return;
             bool haveLock = false;
             try
             {
@@ -146,6 +150,7 @@ namespace StackExchange.NetGain
         }
         protected override void OnAcceptFailed(SocketAsyncEventArgs args, Socket socket)
         {
+            if (IsStopped) return;
             try
             {
                 base.OnAcceptFailed(args, socket);
