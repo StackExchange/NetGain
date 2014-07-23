@@ -317,6 +317,7 @@ namespace StackExchange.NetGain.WebSockets
                 && wsConnection.MaxCharactersPerFrame > 0 && s.Length > wsConnection.MaxCharactersPerFrame)
             {
                 int remaining = s.Length, charIndex = 0;
+                bool isFirst = true;
                 char[] charBuffer = s.ToCharArray();
                 while(remaining > 0)
                 {
@@ -326,6 +327,7 @@ namespace StackExchange.NetGain.WebSockets
                     charIndex += charCount;
 
                     frame = new WebSocketsFrame();
+                    frame.OpCode = isFirst ? WebSocketsFrame.OpCodes.Text : WebSocketsFrame.OpCodes.Continuation;
                     frame.Payload = new BufferStream(context, context.Handler.MaxOutgoingQuota);
                     frame.Payload.Write(buffer, 0, buffer.Length);
                     frame.PayloadLength = buffer.Length;
@@ -337,6 +339,7 @@ namespace StackExchange.NetGain.WebSockets
                     {
                         SendData(context, final);
                     }
+                    isFirst = false;
                 }
                 return;
             }            
