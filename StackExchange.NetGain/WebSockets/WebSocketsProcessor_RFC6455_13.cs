@@ -319,28 +319,30 @@ namespace StackExchange.NetGain.WebSockets
                 int remaining = s.Length, charIndex = 0;
                 bool isFirst = true;
                 char[] charBuffer = s.ToCharArray();
+                var batch = new List<IFrame>();
                 while(remaining > 0)
                 {
                     int charCount = Math.Min(remaining, wsConnection.MaxCharactersPerFrame);
                     var buffer = encoding.GetBytes(charBuffer, charIndex, charCount);
+                    //Debug.WriteLine("> " + new string(charBuffer, charIndex, charCount));
                     remaining -= charCount;
                     charIndex += charCount;
 
                     frame = new WebSocketsFrame();
                     frame.OpCode = isFirst ? WebSocketsFrame.OpCodes.Text : WebSocketsFrame.OpCodes.Continuation;
+                    isFirst = false;
                     frame.Payload = new BufferStream(context, context.Handler.MaxOutgoingQuota);
                     frame.Payload.Write(buffer, 0, buffer.Length);
                     frame.PayloadLength = buffer.Length;
                     frame.Mask = IsClient ? (int?)CreateMask() : null;
                     frame.Payload.Position = 0;
                     frame.IsFinal = remaining <= 0;
-
                     foreach (var final in ApplyExtensions(context, connection, frame, false))
                     {
-                        SendData(context, final);
-                    }
-                    isFirst = false;
+                        batch.Add(final);
+                    }                    
                 }
+                SendData(context, batch);
                 return;
             }            
 
@@ -352,6 +354,7 @@ namespace StackExchange.NetGain.WebSockets
             {
                 frame.OpCode = WebSocketsFrame.OpCodes.Text;
                 var buffer = encoding.GetBytes(s);
+                //Debug.WriteLine("> " + s);
                 frame.Payload.Write(buffer, 0, buffer.Length);
                 frame.PayloadLength = buffer.Length;
             }

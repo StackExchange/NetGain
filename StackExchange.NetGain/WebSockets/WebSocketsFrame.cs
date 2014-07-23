@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace StackExchange.NetGain.WebSockets
 {
@@ -56,16 +57,18 @@ namespace StackExchange.NetGain.WebSockets
 
         public override string ToString()
         {
-            return OpCode + ": " + PayloadLength + " bytes";
+            return OpCode + ": " + PayloadLength + " bytes (" + flags + ")";
         }
         private Flags flags = Flags.IsFinal;
 
+        [Flags]
         private enum Flags : byte
         {
             IsFinal = 128,
             Reserved1 = 64,
             Reserved2 = 32,
-            Reserved3 = 16
+            Reserved3 = 16,
+            None = 0
         }
 
         public enum OpCodes
@@ -104,6 +107,7 @@ namespace StackExchange.NetGain.WebSockets
         internal int GetLengthEstimate() { return PayloadLength + 2; } // doesn't need to be 100% accurate
         void IFrame.Write(NetContext context, Connection connection, Stream stream)
         {
+            //Debug.WriteLine("write:" + this);
             byte[] buffer = null;
             try
             {

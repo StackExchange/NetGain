@@ -127,10 +127,11 @@ namespace StackExchange.NetGain
                 // nothing in the outbound buffer? then check to see if we have any new messages needing processing at the protocol layer, then the connection/handler layer
                 IFrame frame;
                 const int SANE_PACKET_SIZE = 512;
-                while (((frame = protocol.GetOutboundFrame(context)) != null
+                while (bufferedLength < SANE_PACKET_SIZE &&
+                    ((frame = protocol.GetOutboundFrame(context)) != null
                         ||
                         (context.Handler.RequestOutgoing(this) && (frame = protocol.GetOutboundFrame(context)) != null))
-                       && bufferedLength < SANE_PACKET_SIZE && GetFlag(ConnectionFlags.IsAlive))
+                       && GetFlag(ConnectionFlags.IsAlive))
                     // ^^^^ we try and get a frame from the protocol layer; if that is empty, we nudge the connection/handler layer to write, and then we
                     // check again for a fram from the protocol layer (the connection/handler can only queue frames); we then repeat this if necessary/appropriate
                     // to fill a packet

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -40,12 +42,24 @@ namespace StackExchange.NetGain.WebSockets
 
         private object dataQueue, controlQueue;
         IFrame IProtocolProcessor.GetOutboundFrame(NetContext context)
-        {
+        {            
             lock(this)
             {
-                return ProtocolProcessor.GetFrame(context, ref controlQueue)
-                       ?? ProtocolProcessor.GetFrame(context, ref dataQueue);
-            }
+                var result = ProtocolProcessor.GetFrame(context, ref controlQueue);
+                if(result != null)
+                {
+                    //Debug.WriteLine("popped (control): " + result);   
+                }
+                else
+                {
+                    result = ProtocolProcessor.GetFrame(context, ref dataQueue);
+                    if (result != null)
+                    {
+                        //Debug.WriteLine("popped (data): " + result);
+                    }
+                }
+                return result;
+            }            
         }
 
         protected void SendData(NetContext context, IFrame frame)
@@ -53,20 +67,30 @@ namespace StackExchange.NetGain.WebSockets
             lock(this)
             {
                 ProtocolProcessor.AddFrame(context, ref dataQueue, frame);
+                //Debug.WriteLine("pushed (data): " + frame);
+            }
+        }
+        protected void SendData(NetContext context, IList<IFrame> batch)
+        {
+            lock (this)
+            {
+                foreach (var frame in batch)
+                {
+                    ProtocolProcessor.AddFrame(context, ref dataQueue, frame);
+                    //Debug.WriteLine("pushed (data): " + frame);
+                }
             }
         }
         protected void SendShutdown(NetContext context)
         {
-            lock (this)
-            {
-                ProtocolProcessor.AddFrame(context, ref controlQueue, ShutdownFrame.Default);
-            }
+            SendControl(context, ShutdownFrame.Default);
         }
         protected void SendControl(NetContext context, IFrame frame)
         {
             lock (this)
             {
                 ProtocolProcessor.AddFrame(context, ref controlQueue, frame);
+                //Debug.WriteLine("pushed (control): " + frame);
             }
         }
         void IProtocolProcessor.InitializeClientHandshake(NetContext context, Connection connection)
