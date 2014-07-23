@@ -19,9 +19,11 @@ namespace StackExchange.NetGain
             this.concurrentOperations = new Semaphore(concurrentOperations, concurrentOperations);
             MutexTimeout = 10000;
             ConnectTimeout = 5000;
-            MaxIncomingQuota = 2048;
-            MaxOutgoingQuota = 16384;
+            MaxIncomingQuota = DefaultMaxIncomingQuota;
+            MaxOutgoingQuota = DefaultMaxOutgoingQuota;
         }
+
+        internal const int DefaultMaxIncomingQuota = 2048, DefaultMaxOutgoingQuota = 16384;
 
         public int ConnectTimeout { get; set; }
         public int MutexTimeout { get; set; }

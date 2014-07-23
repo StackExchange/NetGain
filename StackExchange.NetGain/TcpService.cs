@@ -20,6 +20,9 @@ namespace StackExchange.NetGain
             this.factory = factory;
             Configuration = configuration;
             ServiceName = processor.Name;
+
+            MaxIncomingQuota = TcpHandler.DefaultMaxIncomingQuota;
+            MaxOutgoingQuota = TcpHandler.DefaultMaxOutgoingQuota;
         }
 
         public string Configuration { get; set; }
@@ -62,6 +65,7 @@ namespace StackExchange.NetGain
                             }
                             Configure();
                             tmp.MaxIncomingQuota = MaxIncomingQuota;
+                            tmp.MaxOutgoingQuota = MaxOutgoingQuota;
                             tmp.Start(Configuration, Endpoints);
                         } catch (Exception ex)
                         {
@@ -351,5 +355,6 @@ namespace StackExchange.NetGain
         }
 
         public int MaxIncomingQuota { get; set; }
+        public int MaxOutgoingQuota { get; set; }
     }
 }
