@@ -307,14 +307,48 @@ namespace StackExchange.NetGain.WebSockets
         public override void Send(NetContext context, Connection connection, object message)
         {
             if(message == null) throw new ArgumentNullException("message");
+
             string s;
+            WebSocketConnection wsConnection;
+            WebSocketsFrame frame;
+
+            var encoding = Encoding.UTF8;
+            if ((s = message as string) != null && (wsConnection = connection as WebSocketConnection) != null
+                && wsConnection.MaxCharactersPerFrame > 0 && s.Length > wsConnection.MaxCharactersPerFrame)
+            {
+                int remaining = s.Length, charIndex = 0;
+                char[] charBuffer = s.ToCharArray();
+                while(remaining > 0)
+                {
+                    int charCount = Math.Min(remaining, wsConnection.MaxCharactersPerFrame);
+                    var buffer = encoding.GetBytes(charBuffer, charIndex, charCount);
+                    remaining -= charCount;
+                    charIndex += charCount;
+
+                    frame = new WebSocketsFrame();
+                    frame.Payload = new BufferStream(context, context.Handler.MaxOutgoingQuota);
+                    frame.Payload.Write(buffer, 0, buffer.Length);
+                    frame.PayloadLength = buffer.Length;
+                    frame.Mask = IsClient ? (int?)CreateMask() : null;
+                    frame.Payload.Position = 0;
+                    frame.IsFinal = remaining <= 0;
+
+                    foreach (var final in ApplyExtensions(context, connection, frame, false))
+                    {
+                        SendData(context, final);
+                    }
+                }
+                return;
+            }            
+
+
             byte[] blob;
-            var frame = new WebSocketsFrame();
+            frame = new WebSocketsFrame();
             frame.Payload = new BufferStream(context, context.Handler.MaxOutgoingQuota);
-            if((s = message as string) != null)
+            if(s != null)
             {
                 frame.OpCode = WebSocketsFrame.OpCodes.Text;
-                var buffer = Encoding.UTF8.GetBytes(s);
+                var buffer = encoding.GetBytes(s);
                 frame.Payload.Write(buffer, 0, buffer.Length);
                 frame.PayloadLength = buffer.Length;
             }

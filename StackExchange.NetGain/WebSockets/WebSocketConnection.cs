@@ -33,6 +33,9 @@ namespace StackExchange.NetGain.WebSockets
             get { return HasFlag(WebSocketFlags.HasSentClose); }
             set { SetFlag(WebSocketFlags.HasSentClose, value);}
         }
+
+        public int MaxCharactersPerFrame { get; set; }
+
         private volatile WebSocketFlags flags = WebSocketFlags.AllowIncomingDataFrames;
         
         private bool HasFlag(WebSocketFlags flag)
