@@ -39,7 +39,26 @@ namespace StackExchange.NetGain
                 timer.Dispose();
                 timer = null;
             }
-            foreach(var conn in allConnections)
+            var ctx = Context;
+            if (ctx != null) ctx.DoNotAccept();
+
+            var proc = MessageProcessor;
+            if (proc != null)
+            {
+                Console.WriteLine("{0}\tShutting down connections...", Connection.GetLogIdent());
+                foreach (var conn in allConnections)
+                {
+                    try
+                    {
+                        proc.OnShutdown(ctx, conn); // processor first
+                        conn.GracefulShutdown(ctx); // then protocol
+                    }
+                    catch (Exception ex)
+                    { Console.Error.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
+                }
+                Thread.Sleep(100);
+            }
+            foreach (var conn in allConnections)
             {
                 var socket = conn.Socket;
                 if(socket != null)

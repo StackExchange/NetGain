@@ -33,6 +33,13 @@ namespace StackExchange.NetGain
             if(read != count) throw new EndOfStreamException();
         }
 
+        internal void DoNotAccept()
+        {
+            var handler = this.Handler;
+            if (handler != null) handler.DoNotAccept();
+        }
+
+
         private readonly TcpHandler handler;
         public TcpHandler Handler { get { return handler; } }
         public NetContext(EventHandler<SocketAsyncEventArgs> asyncHandler, TcpHandler handler)

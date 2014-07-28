@@ -406,37 +406,52 @@ MoreToRead:
         }
 
         public IProtocolFactory ProtocolFactory { get; set; }
-        
+
+        private volatile bool doNotAccept;
+        public void DoNotAccept()
+        {
+            doNotAccept = true;
+        }
+
         private void AcceptCompleted(SocketAsyncEventArgs args, bool startMore)
         {
             Interlocked.Increment(ref totalConnections);
+            Socket newSocket = null;
             try
             {
-                var newSocket = args.AcceptSocket;
-#if VERBOSE
-                Debug.WriteLine(string.Format("[{0}]\taccepted: from {1} to {2}", this, newSocket.RemoteEndPoint, newSocket.LocalEndPoint));
-#endif
-                args.AcceptSocket = null; // clear ASAP to avoid accidental re-use
-                ThreadPool.QueueUserWorkItem(delegate
+                newSocket = args.AcceptSocket;
+                if (doNotAccept)
                 {
-                    var state = ProtocolFactory.CreateConnection(newSocket.LocalEndPoint) ?? new Connection();
-                    state.Prepare(); // logs LastSeen; generates new id
-                    // WriteLog("accepted from " + newSocket.RemoteEndPoint + " to " + newSocket.LocalEndPoint, state);
-                    var processor = ProtocolFactory.GetProcessor();
-                    state.SetProtocol(processor);
-                    processor.InitializeInbound(Context, state); 
-                    state.Socket = newSocket;
+                    Kill(newSocket);
+                }
+                else
+                {
+#if VERBOSE
+                    Debug.WriteLine(string.Format("[{0}]\taccepted: from {1} to {2}", this, newSocket.RemoteEndPoint, newSocket.LocalEndPoint));
+#endif
+                    args.AcceptSocket = null; // clear ASAP to avoid accidental re-use
+                    ThreadPool.QueueUserWorkItem(delegate
+                    {
+                        var state = ProtocolFactory.CreateConnection(newSocket.LocalEndPoint) ?? new Connection();
+                        state.Prepare(); // logs LastSeen; generates new id
+                                         // WriteLog("accepted from " + newSocket.RemoteEndPoint + " to " + newSocket.LocalEndPoint, state);
+                        var processor = ProtocolFactory.GetProcessor();
+                        state.SetProtocol(processor);
+                        processor.InitializeInbound(Context, state);
+                        state.Socket = newSocket;
 #if DEBUG && LOG_OUTBOUND
                     state.ResetLogOutput();
 #endif
-                    OnAccepted(state);
+                        OnAccepted(state);
 
-                });
+                    });
+                }
                 
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine("{0}\tAccept: {1}", Connection.GetIdent(args), ex.Message);
+                Kill(newSocket);
             }
             if (startMore)
             {
@@ -444,6 +459,14 @@ MoreToRead:
             }
         }
 
+        static void Kill(Socket socket)
+        {
+            if (socket != null)
+            {
+                try { socket.Close(); } catch { }
+                try { socket.Dispose(); } catch { }
+            }
+        }
 
         protected virtual void OnAccepted(Connection connection)
         {

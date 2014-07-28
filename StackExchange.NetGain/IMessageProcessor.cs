@@ -18,6 +18,8 @@ namespace StackExchange.NetGain
         void Flushed(NetContext context, Connection connection);
         string Name { get; }
         string Description { get; }
+
+        void OnShutdown(NetContext context, Connection connection);
     }
     //internal class EchoProcessor : IMessageProcessor
     //{

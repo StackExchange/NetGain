@@ -162,5 +162,15 @@ namespace StackExchange.NetGain.WebSockets
         }
         protected virtual void OnFlushed(WebSocketConnection connection)
         { }
+
+
+        protected virtual void OnShutdown(WebSocketConnection connection)
+        {
+            
+        }
+        void IMessageProcessor.OnShutdown(NetContext context, Connection connection)
+        {
+            OnShutdown((WebSocketConnection)connection);
+        }
     }
 }

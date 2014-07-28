@@ -262,7 +262,6 @@ namespace StackExchange.NetGain
             void IMessageProcessor.Configure(TcpService service)
             {
                 service.Endpoints = new[] {new IPEndPoint(IPAddress.Loopback, 5999)};
-
             }
             void IMessageProcessor.StartProcessor(NetContext context, string configuration) { }
             void IMessageProcessor.EndProcessor(NetContext context) { }
@@ -277,6 +276,8 @@ namespace StackExchange.NetGain
                 connection.Send(context, message);
             }
             void IMessageProcessor.Flushed(NetContext context, Connection connection) { }
+
+            void IMessageProcessor.OnShutdown(NetContext context, Connection conn) { }
         }
         internal void RunEchoBenchmark(int clients, int iterations, IProtocolFactory factory)
         {

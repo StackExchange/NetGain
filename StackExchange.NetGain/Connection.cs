@@ -99,6 +99,11 @@ namespace StackExchange.NetGain
         {
             get { return GetFlag(ConnectionFlags.IsAlive); }
         }
+        public void GracefulShutdown(NetContext context)
+        {
+            var tmp = this.protocol;
+            if (tmp != null) tmp.GracefulShutdown(context, this);
+        }
         public void Shutdown(NetContext context)
         {
             bool wasAlive = GetFlag(ConnectionFlags.IsAlive);
