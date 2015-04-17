@@ -10,11 +10,6 @@ namespace StackExchange.NetGain.WebSockets
     public abstract class WebSocketsProcessor : IProtocolProcessor
     {
 
-        //public static WebSocketsProcessor TryUpgrade(StringDictionary headers)
-        //{
-        //    return null;
-        //}
-
         int IProtocolProcessor.ProcessIncoming(NetContext context, Connection connection,
                                                System.IO.Stream incomingBuffer)
         {
@@ -48,14 +43,18 @@ namespace StackExchange.NetGain.WebSockets
                 var result = ProtocolProcessor.GetFrame(context, ref controlQueue);
                 if(result != null)
                 {
-                    //Debug.WriteLine("popped (control): " + result);   
+#if VERBOSE
+                    Debug.WriteLine("popped (control): " + result);   
+#endif
                 }
                 else
                 {
                     result = ProtocolProcessor.GetFrame(context, ref dataQueue);
                     if (result != null)
                     {
-                        //Debug.WriteLine("popped (data): " + result);
+#if VERBOSE
+                        Debug.WriteLine("popped (data): " + result);
+#endif
                     }
                 }
                 return result;
@@ -67,7 +66,9 @@ namespace StackExchange.NetGain.WebSockets
             lock(this)
             {
                 ProtocolProcessor.AddFrame(context, ref dataQueue, frame);
-                //Debug.WriteLine("pushed (data): " + frame);
+#if VERBOSE
+                Debug.WriteLine("pushed (data): " + frame);
+#endif
             }
         }
         protected void SendData(NetContext context, IList<IFrame> batch)
@@ -77,7 +78,9 @@ namespace StackExchange.NetGain.WebSockets
                 foreach (var frame in batch)
                 {
                     ProtocolProcessor.AddFrame(context, ref dataQueue, frame);
-                    //Debug.WriteLine("pushed (data): " + frame);
+#if VERBOSE
+                    Debug.WriteLine("pushed (data): " + frame);
+#endif
                 }
             }
         }
@@ -90,7 +93,9 @@ namespace StackExchange.NetGain.WebSockets
             lock (this)
             {
                 ProtocolProcessor.AddFrame(context, ref controlQueue, frame);
-                //Debug.WriteLine("pushed (control): " + frame);
+#if VERBOSE
+                Debug.WriteLine("pushed (control): " + frame);
+#endif
             }
         }
         void IProtocolProcessor.InitializeClientHandshake(NetContext context, Connection connection)

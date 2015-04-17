@@ -51,7 +51,8 @@ namespace StackExchange.NetGain
         }
         private static readonly RandomNumberGenerator rng = new RNGCryptoServiceProvider();
         public static void GetRandomBytes(byte[] buffer)
-        {  // "This method is thread safe." http://msdn.microsoft.com/en-us/library/system.security.cryptography.rngcryptoserviceprovider.getbytes.aspx
+        {  
+            // "This method is thread safe." http://msdn.microsoft.com/en-us/library/system.security.cryptography.rngcryptoserviceprovider.getbytes.aspx
             rng.GetBytes(buffer);
         }
 
@@ -100,13 +101,14 @@ namespace StackExchange.NetGain
                 
                 if (buffer == null)
                 {
-                    // nada nix and nowt to do
+                    // nada nix and nothing to do
                 }
                 else if (count != BufferSize && args.LastOperation == SocketAsyncOperation.Receive)
                 {
                     // don't recycle it! it was a micro-buffer for low-weight read; the rest
                     // of the array is not owned by us
-                } else
+                } 
+                else
                 {
                     Recycle(buffer);
                 }

@@ -114,7 +114,8 @@ namespace StackExchange.NetGain
             int thisPage = NetContext.BufferSize - chunkOffet;
             var chunk = buffers[chunkIndex];
             if (thisPage >= count)
-            { // can write to a single page
+            { 
+                // can write to a single page
                 Buffer.BlockCopy(buffer, bufferOffset, chunk, chunkOffet, count);
             }
             else
@@ -145,11 +146,13 @@ namespace StackExchange.NetGain
             int thisPage = NetContext.BufferSize - chunkOffet;
             var chunk = buffers[chunkIndex];
             if(thisPage >= count)
-            { // can fill from a single page
+            { 
+                // can fill from a single page
                 Buffer.BlockCopy(chunk, chunkOffet, buffer, bufferOffset, count);
                 read = count;
             } else
-            { // need multiple pages; let's use up the current page to start...
+            { 
+                // need multiple pages; let's use up the current page to start...
                 Buffer.BlockCopy(chunk, chunkOffet, buffer, bufferOffset, thisPage);
                 bufferOffset += thisPage;
                 read = thisPage;

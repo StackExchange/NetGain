@@ -38,33 +38,7 @@ namespace ConsoleApplication1
             Console.WriteLine("Server dead; press any key");
             Console.ReadKey();
         }
-        static void Main2()
-        {
-            //var test = WebSocketsProcessor_Hixie76_00.ComputeKey("18x 6]8vM;54 *(5:  {   U1]8  z [  8", "1_ tx7X d  <  nw  334J702) 7]o}` 0",
-            //    Encoding.ASCII.GetBytes("Tm[K T2u") );
-            //var asc = Encoding.ASCII.GetString(test);
-            //string s = "GET /demo HTTP/1.1";
-            //var match = Regex.Match(s, @"GET ([^\s]+) HTTP");
-            //if(match.Success)
-            //{
-            //    Console.WriteLine(match.Groups[1].Value);
-            //}
-            //var handler = new TcpHandler();
-            //var evt = new ManualResetEvent(false);
-            //handler.Received += msg =>
-            //{
-            //    Console.WriteLine(msg.Value);
-            //    evt.Set();
-            //};
-            //var ctx = new NetContext(delegate {}, handler);
-            //IProtocolProcessor proc = new WebSocketsProcessor_RFC6455_13(false);
-            //IProtocolFactory factory = WebSocketsSelectorProcessor.Default;
-            //var conn = factory.CreateConnection();
-            //var ms = new MemoryStream(new byte[] {0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58});
-            //int i = proc.ProcessIncoming(ctx, conn, ms);
-            //evt.WaitOne();
 
-        }
         static void Main3() {
 
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Loopback, 6002);
@@ -151,126 +125,11 @@ namespace ConsoleApplication1
 
                 legacy.Execute("hello", false);
                 rfc.Execute("world", false);
-                //server.Broadcast("boo");
-                /*
-                List<TcpClient> clients = new List<TcpClient>();
-                for (int i = 0; i < CLIENT_COUNT; i++)
-                {
-                    var client = new TcpClient();
-                    clients.Add(client);
-                    client.ProtocolFactory = WebSocketClientFactory.Default;
-                    client.Received += callback;
-                    client.Open(endpoint, c =>
-                    {
-                        var conn = (WebSocketConnection) c;
-                        conn.RequestLine = "GET /chat HTTP/1.1";
-                        conn.Host = "stackoverflow.com";
-                    });
-                }
-                Console.WriteLine("All opened");
-                Thread.Sleep(1500);
 
-                Console.WriteLine("Writing...");
-                watch = Stopwatch.StartNew();
-                foreach(var client in clients)
-                {
-                    for (int j = 0; j < ITEM_COUNT; j++)
-                    {
-                        client.Send("Testing");
-                    }
-                }
-                Console.WriteLine("Press any key to broadcast");
-                Console.ReadKey();
-                broadcast = true;
-                count = 0;
-                watch = Stopwatch.StartNew();
-                server.Broadcast("Boo!");
-
-
-                Console.WriteLine("Press any key to broadcast");
-                Console.ReadKey();
-                count = 0;
-                watch = Stopwatch.StartNew();
-                server.Broadcast("Boo!");
-                */
                 Console.WriteLine("Press any key to end");
                 Console.ReadKey();
             }
         }
-    }
-    //class EchoFactory : IProtocolFactory
-    //{
-    //    public IProtocolProcessor GetProcessor()
-    //    {
-    //        return new Echo();
-    //    }
-    //    public Connection CreateConnection()
-    //    {
-    //        return null;
-    //    }
-    //    class Echo : ProtocolProcessor
-    //    {
-
-    //        protected override int ProcessIncoming(NetContext context, Connection connection, Stream incomingBuffer)
-    //        {
-    //            using(var ms = new MemoryStream((int)incomingBuffer.Length))
-    //            {
-    //                var buffer = context.GetBuffer();
-    //                int read, totalBytes = 0;
-    //                while((read = incomingBuffer.Read(buffer, 0, buffer.Length)) > 0)
-    //                {
-    //                    ms.Write(buffer, 0, read);
-    //                    totalBytes += read;
-    //                }
-    //                context.Recycle(buffer);
-    //                connection.Send(context, ms.ToArray());
-    //                return totalBytes;
-    //            }
-    //        }
-
-    //        protected override void Send(NetContext context, object message)
-    //        {
-    //            EnqueueFrame(context, new BinaryFrame((byte[])message));
-    //        }
-    //    }
-    //}
-    //class BackAndForeFactory : IProtocolFactory
-    //{
-    //    public Connection CreateConnection()
-    //    {
-    //        return null;
-    //    }
-    //    public IProtocolProcessor GetProcessor()
-    //    {
-    //        return new BackAndFore();
-    //    }
-    //    class BackAndFore : ProtocolProcessor
-    //    {
-    //        protected override int ProcessIncoming(NetContext context, Connection connection, Stream incomingBuffer)
-    //        {
-    //            if (incomingBuffer.Length < 4) return 0;
-    //            int len = (incomingBuffer.ReadByte() << 24) | (incomingBuffer.ReadByte() << 16) |
-    //                      (incomingBuffer.ReadByte() << 8) | (incomingBuffer.ReadByte());
-
-    //            int packetLen = 4 + len;
-    //            if (incomingBuffer.Length < packetLen) return 0;
-
-    //            var raw = new byte[len];
-    //            int read, offset = 0;
-    //            while ((read = incomingBuffer.Read(raw, offset, len)) > 0)
-    //            {
-    //                offset += read;
-    //                len -= read;
-    //            }
-    //            Console.WriteLine("back to client: " + Encoding.UTF8.GetString(raw));
-    //            return packetLen;
-    //        }
-    //        protected override void Send(NetContext context, object message)
-    //        {
-    //            EnqueueFrame(context, new BigEndianInt32Frame(Encoding.UTF8.GetByteCount((string) message), false));
-    //            EnqueueFrame(context, new StringFrame((string)message));
-    //        }
-    //    }
-    //}
+    } 
     
 }

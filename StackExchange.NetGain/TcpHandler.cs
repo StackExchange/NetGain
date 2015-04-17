@@ -111,7 +111,8 @@ AcceptMore:
                     AcceptCompleted(args, false);
                     goto AcceptMore; // this is to prevent a stack dive
                 }
-            } catch(Exception ex)
+            } 
+            catch(Exception ex)
             {
                 Console.Error.WriteLine("{0}\tStartAccept **CRITICAL**: {1}", Connection.GetIdent(args), ex.Message);
             }
@@ -169,7 +170,7 @@ AcceptMore:
             }
         }
         protected virtual void OnAcceptFailed(SocketAsyncEventArgs args, Socket socket)
-        {}
+        { }
         protected virtual void OnFlushed(Connection connection)
         { }
         private void SendCompleted(SocketAsyncEventArgs args)
@@ -247,7 +248,8 @@ AcceptMore:
                 buffer = microBuffer;
                 index = microBufferIndex++;
                 if (microBufferIndex == microBuffer.Length)
-                { // will need a new one next time
+                { 
+                    // will need a new one next time
                     microBufferIndex = 0;
                     microBuffer = null;
                 }
@@ -285,8 +287,9 @@ AcceptMore:
                 var args = Context.GetSocketArgs();
                 args.UserToken = connection;
                 SetMicroBuffer(args);
-                    // set a **tiny portion** of a shard buffer until we have reason to think they are sending us data
-                if (!socket.ReceiveAsync(args)) ReceiveCompleted(args);
+                // set a **tiny portion** of a shard buffer until we have reason to think they are sending us data
+                if (!socket.ReceiveAsync(args)) 
+                    ReceiveCompleted(args);
             }
         }
 
@@ -369,11 +372,13 @@ MoreToRead:
                     if (keepReading)
                     {
                         if(state.IncomingBufferedLength == 0)
-                        { // use a fraction of a buffer until we think there is something useful to read
+                        { 
+                            // use a fraction of a buffer until we think there is something useful to read
                             SetMicroBuffer(args);
                         }
                         else
-                        { // we know we're expecting more, since we have some buffered that we can't yet handle
+                        { 
+                            // we know we're expecting more, since we have some buffered that we can't yet handle
                             SetFullBuffer(args);
                         }
 
@@ -382,7 +387,8 @@ MoreToRead:
                             if (state.CanRead && !state.Socket.ReceiveAsync(args)) goto MoreToRead;
                         }
                         catch (ObjectDisposedException)
-                        { // can get this if the client disconnects and the socket gets shut down
+                        { 
+                            // can get this if the client disconnects and the socket gets shut down
                             Debug.WriteLine("EOF/close: " + state);
                             CloseSocket(args);
                         }
@@ -395,7 +401,8 @@ MoreToRead:
                 }
             }
             catch (CloseSocketException)
-            { // fairly clean exit
+            { 
+                // fairly clean exit
                 CloseSocket(args);
             }
             catch (Exception ex)

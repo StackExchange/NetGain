@@ -31,7 +31,9 @@ namespace StackExchange.NetGain
                 int oldLen = connections.Length;
                 Array.Resize(ref connections, oldLen * 2);
                 connections[oldLen] = connection;
+#if VERBOSE
                 Debug.WriteLine(string.Format("resized ConnectionSet: {0}", connections.Length));
+#endif
             }
         }
         public bool Remove(Connection connection)
@@ -75,7 +77,8 @@ namespace StackExchange.NetGain
         public void Push(T value)
         {
             if (count == data.Length)
-            { // grow the array, re-normalizing to zero
+            { 
+                // grow the array, re-normalizing to zero
                 var newArr = new T[data.Length * 2];
                 int split = count - origin;
                 Array.Copy(data, origin, newArr, 0, split);

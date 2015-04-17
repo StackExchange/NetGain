@@ -44,27 +44,28 @@ namespace StackExchange.NetGain.WebSockets
             NetContext.GetRandomBytes(seed);
             Random rand = new Random(BitConverter.ToInt32(seed, 0));
 
-        // 16.  Let /spaces_1/ be a random integer from 1 to 12 inclusive.
+            // 16.  Let /spaces_1/ be a random integer from 1 to 12 inclusive.
             int spaces = rand.Next(1, 13);
 
-        // 17.  Let /max_1/ be the largest integer not greater than
-        // 4,294,967,295 divided by /spaces_1/.
+            // 17.  Let /max_1/ be the largest integer not greater than
+            // 4,294,967,295 divided by /spaces_1/.
             int max = int.MaxValue / spaces; // note using int.MaxValue for convenience
-        //    18.  Let /number_1/ be a random integer from 0 to /max_1/ inclusive.
+
+            //    18.  Let /number_1/ be a random integer from 0 to /max_1/ inclusive.
             int number = rand.Next(0, max);
 
-        //19.  Let /product_1/ be the result of multiplying /number_1/ and
-        // /spaces_1/ together.
+            //19.  Let /product_1/ be the result of multiplying /number_1/ and
+            // /spaces_1/ together.
             ulong product = (ulong)number * (ulong)spaces;
 
-        //20.  Let /key_1/ be a string consisting of /product_1/, expressed in
-        //base ten using the numerals in the range U+0030 DIGIT ZERO (0)
-        //to U+0039 DIGIT NINE (9).
+            //20.  Let /key_1/ be a string consisting of /product_1/, expressed in
+            //base ten using the numerals in the range U+0030 DIGIT ZERO (0)
+            //to U+0039 DIGIT NINE (9).
             var key = new StringBuilder().Append(product);
 
-        //21.  Insert between one and twelve random characters from the ranges
-        //U+0021 to U+002F and U+003A to U+007E into /key_1/ at random
-        //positions.
+            //21.  Insert between one and twelve random characters from the ranges
+            //U+0021 to U+002F and U+003A to U+007E into /key_1/ at random
+            //positions.
             int charsToAdd = rand.Next(1, 13);
             for(int i = 0 ; i < charsToAdd ; i++)
             {
@@ -72,8 +73,9 @@ namespace StackExchange.NetGain.WebSockets
                 char c = (char) (val + val < 14 ? 0x21 : 0x3a);
                 key.Insert(rand.Next(key.Length), c);
             }
-        // 22.  Insert /spaces_1/ U+0020 SPACE characters into /key_1/ at random
-        // positions other than the start or end of the string.
+
+            // 22.  Insert /spaces_1/ U+0020 SPACE characters into /key_1/ at random
+            // positions other than the start or end of the string.
             for(int i = 0 ; i < spaces ; i++ )
             {
                 key.Insert(rand.Next(1, key.Length - 1), ' ');

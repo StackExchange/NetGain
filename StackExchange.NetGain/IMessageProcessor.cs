@@ -20,44 +20,5 @@ namespace StackExchange.NetGain
         string Description { get; }
 
         void OnShutdown(NetContext context, Connection connection);
-    }
-    //internal class EchoProcessor : IMessageProcessor
-    //{
-    //    public string Name { get { return "Echo"; } }
-    //    public string Description { get { return "Garbage in, garbage out"; } }
-    //    void IMessageProcessor.StartProcessor(string configuration) {}
-    //    void IMessageProcessor.EndProcessor() { }
-    //    void IMessageProcessor.Heartbeat() { }
-    //    object IMessageProcessor.StartClient()
-    //    {
-    //        return null;
-    //    }
-
-    //    void IMessageProcessor.Received(NetContext context, Connection connection, object message)
-    //    {
-    //        connection.Send(context, message);
-    //    }
-
-    //    void IMessageProcessor.EndClient(object state)
-    //    {
-    //    }
-    //    void IDisposable.Dispose()
-    //    {
-    //    }
-    //}
-    //internal class EchoClient : TcpClient
-    //{
-    //    protected override void Serialize(object obj, Stream destination)
-    //    {
-    //        var bytes = Encoding.UTF8.GetBytes((string) obj);
-    //        destination.Write(bytes, 0, bytes.Length);
-    //    }
-    //    protected override object Deserialize(Stream source)
-    //    {
-    //        using (var reader = new StreamReader(source))
-    //            return reader.ReadToEnd();
-    //    }
-    //}
-
-   
+    }   
 }
