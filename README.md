@@ -1,0 +1,56 @@
+## Welcome to StackExchange.NetGain! ##
+
+**NetGain** supports:
+
+- **[RFC 6455](#supported-websocket-specifications)**
+
+## Build ##
+
+StackExchange.NetGain is built as a single assembly, **StackExchange.NetGain.dll**.
+
+### NuGet Gallery ###
+
+StackExchange.NetGain is available on the **[NuGet Gallery]**
+
+- **[NuGet Gallery: stackexchange.netgain]**
+
+You can add websocket-sharp to your project with the **NuGet Package Manager**, by using the following command in the **Package Manager Console**.
+
+    PM> Install-Package StackExchange.NetGain
+
+### WebSocket Server Example ###
+
+```csharp
+using System;
+using StackExchange.NetGain;
+
+namespace Example
+{
+  public class Program
+  {
+    public static void Main (string[] args)
+    {
+		using(var server = new TcpServer())
+		{
+			server.ProtocolFactory = WebSocketsSelectorProcessor.Default;
+			server.ConnectionTimeoutSeconds = 60;
+			server.Received += msg =>
+			{
+				var conn = (WebSocketConnection)msg.Connection;
+				string reply = (string)msg.Value + " / " + conn.Host;
+				Console.WriteLine("[server] {0}", msg.Value);
+				msg.Connection.Send(msg.Context, reply);
+			};
+			server.Start("abc", endpoint);
+			Console.WriteLine("Server running");
+
+			Console.ReadKey();
+		}
+		Console.WriteLine("Server dead; press any key");
+		Console.ReadKey();
+      }
+    }
+  }
+}
+```
+
