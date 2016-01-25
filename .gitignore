@@ -11,3 +11,5 @@ _ReSharper.*
 *.sln.ide
 *.orig
 StackExchange.NetGain.*.nupkg
+/packages/
+!packages/repositories.config
