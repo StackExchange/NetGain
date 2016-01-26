@@ -2,7 +2,7 @@
 
 **NetGain** supports:
 
-- **[RFC 6455](#supported-websocket-specifications)**
+- **[RFC 6455](https://tools.ietf.org/html/rfc6455)**
 
 ## Build ##
 
