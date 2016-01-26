@@ -22,7 +22,9 @@ You can add StackExchange.NetGain to your project with the **NuGet Package Manag
 
 ```csharp
 using System;
+using System.Net;
 using StackExchange.NetGain;
+using StackExchange.NetGain.WebSockets;
 
 namespace Example
 {
@@ -30,6 +32,7 @@ namespace Example
   {
     public static void Main (string[] args)
     {
+		IPEndPoint endpoint = new IPEndPoint(IPAddress.Loopback, 6002);
 		using(var server = new TcpServer())
 		{
 			server.ProtocolFactory = WebSocketsSelectorProcessor.Default;
