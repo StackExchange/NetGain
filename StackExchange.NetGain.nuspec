@@ -7,7 +7,7 @@
     <owners>Stack Exchange Inc., marc.gravell, gdalgas</owners>
     <summary>Web Socket server library</summary>
     <description>High performance Web Socket server powering Stack Overflow</description>
-    <tags>socket server</tags>
+    <tags>socket server websockets</tags>
     <language>en-US</language>    
     <projectUrl>https://github.com/StackExchange/NetGain</projectUrl>
     <licenseUrl>https://raw.github.com/StackExchange/NetGain/master/LICENSE</licenseUrl>
