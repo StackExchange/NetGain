@@ -14,7 +14,7 @@ StackExchange.NetGain is available on the **[NuGet Gallery]**
 
 - **[NuGet Gallery: stackexchange.netgain]**
 
-You can add websocket-sharp to your project with the **NuGet Package Manager**, by using the following command in the **Package Manager Console**.
+You can add StackExchange.NetGain to your project with the **NuGet Package Manager**, by using the following command in the **Package Manager Console**.
 
     PM> Install-Package StackExchange.NetGain
 
