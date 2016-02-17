@@ -3,6 +3,9 @@
 **NetGain** supports:
 
 - **[RFC 6455](https://tools.ietf.org/html/rfc6455)**
+- all draft versions of the RFC (between hixie-76 and v13, aka RFC 6455)  
+-  [hixie-76/hybi-00](https://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76)
+- fixes for various browsers with slightly broken implementations
 
 ## Build ##
 
