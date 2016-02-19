@@ -30,6 +30,10 @@ namespace StackExchange.NetGain
             if (protocol == null) throw new InvalidEnumArgumentException("protocol");
             this.protocol = protocol;
         }
+        public string GetProtocolName()
+        {
+            return protocol?.ToString() ?? "(none)";
+        }
 
         private BufferStream incomingBuffer, outgoingBuffer;
         public int IncomingBufferedLength { get { return incomingBuffer == null ? 0 : (int)incomingBuffer.Length; } }

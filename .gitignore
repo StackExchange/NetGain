@@ -8,6 +8,8 @@ _ReSharper.*
 *.user
 *.v11.suo
 *.v12.suo
+*.suo
+.vs/
 *.sln.ide
 *.orig
 StackExchange.NetGain.*.nupkg

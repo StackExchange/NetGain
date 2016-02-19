@@ -9,6 +9,10 @@ namespace StackExchange.NetGain.WebSockets
 {
     internal abstract class WebSocketsProcessor_Hixie76_00 : WebSocketsProcessor
     {
+        public override string ToString()
+        {
+            return "hixie-76";
+        }
         private class HixieFrame : StringFrame
         {
             public HixieFrame(string value) : base(value, Encoding.UTF8)

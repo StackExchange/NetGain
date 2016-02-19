@@ -11,6 +11,10 @@ namespace StackExchange.NetGain.WebSockets
 {
     internal class WebSocketsProcessor_RFC6455_13 : WebSocketsProcessor
     {
+        public override string ToString()
+        {
+            return "rfc6455";
+        }
         private readonly bool isClient;
         public WebSocketsProcessor_RFC6455_13(bool isClient)
         {
