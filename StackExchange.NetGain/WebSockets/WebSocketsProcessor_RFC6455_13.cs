@@ -272,26 +272,18 @@ namespace StackExchange.NetGain.WebSockets
                     case WebSocketsFrame.OpCodes.Binary:
                         byte[] blob;
                         int len;
-                        if (stream == null || (len = ((int)stream.Length - (int)stream.Position)) == 0) blob = new byte[0]; 
+                        if (stream == null || (len = ((int)stream.Length)) == 0) blob = new byte[0]; 
                         else
                         {
                             blob = new byte[len];
-                            byte[] buffer = null;
-                            try
+                            int offset = 0, read;
+                            stream.Position = 0;
+                            while((read = stream.Read(blob, offset, len)) > 0)
                             {
-                                buffer = context.GetBuffer();
-                                int offset = 0, read;
-                                stream.Position = 0;
-                                while((read = stream.Read(buffer, offset, Math.Min(len, buffer.Length))) > 0)
-                                {
-                                    offset += read;
-                                    len -= read;
-                                }
-                                if(len != 0) throw new EndOfStreamException();
-                            } finally
-                            {
-                                context.Recycle(buffer);
+                                offset += read;
+                                len -= read;
                             }
+                            if(len != 0) throw new EndOfStreamException();
                         }
                         context.Handler.OnReceived(connection, blob);
                         break;
