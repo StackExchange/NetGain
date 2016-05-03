@@ -2,13 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using System.Diagnostics;
+using StackExchange.NetGain.Logging;
 
 namespace StackExchange.NetGain
 {
     internal class ConnectionSet : IEnumerable<Connection>
     {
         private Connection[] connections = new Connection[10];
+        private readonly ILog log = LogManager.Current.GetLogger<ConnectionSet>();
 
         private int count;
         public int Count
@@ -32,7 +33,7 @@ namespace StackExchange.NetGain
                 Array.Resize(ref connections, oldLen * 2);
                 connections[oldLen] = connection;
 #if VERBOSE
-                Debug.WriteLine(string.Format("resized ConnectionSet: {0}", connections.Length));
+                log.Debug("resized ConnectionSet: {0}", connections.Length);
 #endif
             }
         }

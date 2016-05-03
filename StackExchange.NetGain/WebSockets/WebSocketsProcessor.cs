@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
+using StackExchange.NetGain.Logging;
 
 namespace StackExchange.NetGain.WebSockets
 {
     public abstract class WebSocketsProcessor : IProtocolProcessor
     {
+        private readonly ILog log = LogManager.Current.GetLogger<WebSocketsProcessor>();
 
         int IProtocolProcessor.ProcessIncoming(NetContext context, Connection connection,
                                                System.IO.Stream incomingBuffer)
@@ -44,7 +45,7 @@ namespace StackExchange.NetGain.WebSockets
                 if(result != null)
                 {
 #if VERBOSE
-                    Debug.WriteLine("popped (control): " + result);   
+                    log.Debug("popped (control): " + result);   
 #endif
                 }
                 else
@@ -53,7 +54,7 @@ namespace StackExchange.NetGain.WebSockets
                     if (result != null)
                     {
 #if VERBOSE
-                        Debug.WriteLine("popped (data): " + result);
+                        log.Debug("popped (data): " + result);
 #endif
                     }
                 }
@@ -67,7 +68,7 @@ namespace StackExchange.NetGain.WebSockets
             {
                 ProtocolProcessor.AddFrame(context, ref dataQueue, frame);
 #if VERBOSE
-                Debug.WriteLine("pushed (data): " + frame);
+                log.Debug("pushed (data): " + frame);
 #endif
             }
         }
@@ -79,7 +80,7 @@ namespace StackExchange.NetGain.WebSockets
                 {
                     ProtocolProcessor.AddFrame(context, ref dataQueue, frame);
 #if VERBOSE
-                    Debug.WriteLine("pushed (data): " + frame);
+                    log.Debug("pushed (data): " + frame);
 #endif
                 }
             }
@@ -94,7 +95,7 @@ namespace StackExchange.NetGain.WebSockets
             {
                 ProtocolProcessor.AddFrame(context, ref controlQueue, frame);
 #if VERBOSE
-                Debug.WriteLine("pushed (control): " + frame);
+                log.Debug("pushed (control): " + frame);
 #endif
             }
         }
