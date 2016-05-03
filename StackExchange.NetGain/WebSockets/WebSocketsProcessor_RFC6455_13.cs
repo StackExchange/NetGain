@@ -3,9 +3,9 @@ using System.IO;
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using StackExchange.NetGain.Logging;
 
 namespace StackExchange.NetGain.WebSockets
 {
@@ -15,9 +15,12 @@ namespace StackExchange.NetGain.WebSockets
         {
             return "rfc6455";
         }
+
+        private readonly ILog log;
         private readonly bool isClient;
         public WebSocketsProcessor_RFC6455_13(bool isClient)
         {
+            log = LogManager.Current.GetLogger<WebSocketsProcessor_RFC6455_13>();
             this.isClient = isClient;
         }
         public bool IsClient { get { return isClient; } }
@@ -113,7 +116,7 @@ namespace StackExchange.NetGain.WebSockets
                 int payloadLen = frame.PayloadLength;
 
 #if VERBOSE
-                Debug.WriteLine("Parsed header from: " + BitConverter.ToString(buffer, 0, headerLength));
+                log.Debug("Parsed header from: " + BitConverter.ToString(buffer, 0, headerLength));
 #endif
 
                 if (incoming.Length < headerLength + payloadLen) return 0; // not enough data to read the payload
@@ -247,7 +250,7 @@ namespace StackExchange.NetGain.WebSockets
             }
             if (frame.OpCode == WebSocketsFrame.OpCodes.Close)
             {
-                Debug.WriteLine("Sent close frame: " + connection);
+                log.Debug("Sent close frame: " + connection);
             }
         }
         private void Process(NetContext context, Connection connection, Stream stream, WebSocketsFrame.OpCodes opCode)
@@ -320,7 +323,7 @@ namespace StackExchange.NetGain.WebSockets
                 {
                     int charCount = Math.Min(remaining, wsConnection.MaxCharactersPerFrame);
                     var buffer = encoding.GetBytes(charBuffer, charIndex, charCount);
-                    //Debug.WriteLine("> " + new string(charBuffer, charIndex, charCount));
+                    //log.Debug("> " + new string(charBuffer, charIndex, charCount));
                     remaining -= charCount;
                     charIndex += charCount;
 
@@ -350,7 +353,7 @@ namespace StackExchange.NetGain.WebSockets
             {
                 frame.OpCode = WebSocketsFrame.OpCodes.Text;
                 var buffer = encoding.GetBytes(s);
-                //Debug.WriteLine("> " + s);
+                //log.Debug("> " + s);
                 frame.Payload.Write(buffer, 0, buffer.Length);
                 frame.PayloadLength = buffer.Length;
             }

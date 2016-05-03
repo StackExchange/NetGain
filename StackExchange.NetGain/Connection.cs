@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.IO;
+using StackExchange.NetGain.Logging;
 
 namespace StackExchange.NetGain
 {
@@ -12,6 +12,7 @@ namespace StackExchange.NetGain
     {
         public object UserToken { get; set; }
 
+        private readonly ILog log;
         private IProtocolProcessor protocol;
         public Socket Socket { get; set; }
         public virtual void Reset()
@@ -23,6 +24,7 @@ namespace StackExchange.NetGain
         }
         public Connection()
         {
+            log = LogManager.Current.GetLogger<Connection>();
             Reset();
         }
         public void SetProtocol(IProtocolProcessor protocol)
@@ -203,7 +205,7 @@ namespace StackExchange.NetGain
                     if (!CanRead) break; // stop processing data
 #if VERBOSE
                     long inboundLength = incomingBuffer.Length;
-                    Debug.WriteLine(string.Format("[{0}]\tprocessing with {1} bytes available", context.Handler, inboundLength));
+                    log.Debug("[{0}]\tprocessing with {1} bytes available", context.Handler, inboundLength);
 #endif
                     incomingBuffer.Position = 0;
                     toDiscard = protocol.ProcessIncoming(context, this, incomingBuffer);
@@ -224,7 +226,7 @@ namespace StackExchange.NetGain
                             
                         } 
 #if VERBOSE
-                        Debug.WriteLine(string.Format("[{0}]\tprocessed {1} bytes; {2} remaining", context.Handler, toDiscard, inboundLength - toDiscard));
+                        log.Debug("[{0}]\tprocessed {1} bytes; {2} remaining", context.Handler, toDiscard, inboundLength - toDiscard);
 #endif
                     } else if(toDiscard < 0)
                     {
@@ -240,7 +242,7 @@ namespace StackExchange.NetGain
                     else
                     {
 #if VERBOSE
-                        Debug.WriteLine(string.Format("[{0}]\tincomplete", context.Handler));
+                        log.Debug("[{0}]\tincomplete", context.Handler);
 #endif
                     }
                 } while (toDiscard > 0 && incomingBuffer != null && incomingBuffer.Length > 0);

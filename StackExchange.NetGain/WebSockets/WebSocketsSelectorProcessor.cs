@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using StackExchange.NetGain.Logging;
 
 namespace StackExchange.NetGain.WebSockets
 {
@@ -13,6 +14,7 @@ namespace StackExchange.NetGain.WebSockets
         public static WebSocketsSelectorProcessor Default { get { return @default; } }
         IProtocolProcessor IProtocolFactory.GetProcessor() { return this; }
         Connection IProtocolFactory.CreateConnection(EndPoint endpoint) { return new WebSocketConnection(endpoint); }
+        private readonly ILog log = LogManager.Current.GetLogger<WebSocketsSelectorProcessor>();
 
         protected override void Send(NetContext context, Connection connection, object message)
         {
@@ -170,7 +172,7 @@ namespace StackExchange.NetGain.WebSockets
                         {
                             sb.AppendFormat("{0}:\t{1}", key, headers[key]).AppendLine();
                         }
-                        Console.Error.WriteLine(sb);
+                        log.Error(sb.ToString());
                     }
                     throw new InvalidOperationException("Request was not a web-socket upgrade request; connection: " + headers["Connection"] + ", upgrade: " + headers["Upgrade"]);
                 }

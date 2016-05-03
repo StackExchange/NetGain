@@ -83,6 +83,12 @@
     <Compile Include="IMessageProcessor.cs" />
     <Compile Include="IProtocolFactory.cs" />
     <Compile Include="IProtocolProcessor.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\ConsoleLogManager.cs" />
+    <Compile Include="Logging\ILog.cs" />
+    <Compile Include="Logging\LogManager.cs" />
+    <Compile Include="Logging\NoOpLogger.cs" />
+    <Compile Include="Logging\NoOpLogManager.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageProcessorServiceInstaller.cs">
       <SubType>Component</SubType>

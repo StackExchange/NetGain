@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
+using StackExchange.NetGain.Logging;
 
 namespace StackExchange.NetGain
 {
@@ -34,6 +35,7 @@ namespace StackExchange.NetGain
 
         public const string DefaultServiceName = "SocketServerLocal";
 
+        private static readonly ILog log = LogManager.Current.GetLogger<TcpService>();
         private TcpServer server;
         private IMessageProcessor processor;
         private IProtocolFactory factory;
@@ -69,7 +71,7 @@ namespace StackExchange.NetGain
                             tmp.Start(Configuration, Endpoints);
                         } catch (Exception ex)
                         {
-                            Console.Error.WriteLine(ex.Message);
+                            log.Error(ex.Message);
                             Stop(); // argh!
                         }
                     });
@@ -139,10 +141,10 @@ namespace StackExchange.NetGain
         private static void LogWhileDying(object ex)
         {
             Exception typed = ex as Exception;
-            Console.Error.WriteLine(typed == null ? Convert.ToString(ex) : typed.Message);
+            log.Error(typed == null ? Convert.ToString(ex) : typed.Message);
             if(typed != null)
             {
-                Console.Error.WriteLine(typed.StackTrace);
+                log.Error(typed.StackTrace);
             }
 #if DEBUG
             if (Debugger.IsAttached)
@@ -175,7 +177,7 @@ namespace StackExchange.NetGain
                                 name = args[i].Substring(3);
                             } else
                             {
-                                Console.Error.WriteLine("Unknown argument: " + args[i]);
+                                log.Error("Unknown argument: " + args[i]);
                                 hasErrors = true;
                             }
                             break;
@@ -183,30 +185,30 @@ namespace StackExchange.NetGain
                 }
                 if (hasErrors)
                 {
-                    Console.Error.WriteLine("Support flags:");
-                    Console.Error.WriteLine("-i\tinstall service");
-                    Console.Error.WriteLine("-u\tuninstall service");
-                    Console.Error.WriteLine("-b\tbenchmark");
-                    Console.Error.WriteLine("-n:name\toverride service name");
-                    Console.Error.WriteLine("(no args) execute in console");
+                    log.Error("Support flags:");
+                    log.Error("-i\tinstall service");
+                    log.Error("-u\tuninstall service");
+                    log.Error("-b\tbenchmark");
+                    log.Error("-n:name\toverride service name");
+                    log.Error("(no args) execute in console");
                     return -1;
                 }
                 if(uninstall)
                 {
-                    Console.WriteLine("Uninstalling service...");
+                    log.Info("Uninstalling service...");
                     InstallerServiceName = name;
                     ManagedInstallerClass.InstallHelper(new string[] { "/u", typeof(T).Assembly.Location });
                 }
                 if(install)
                 {
-                    Console.WriteLine("Installing service...");
+                    log.Info("Installing service...");
                     InstallerServiceName = name;
                     ManagedInstallerClass.InstallHelper(new string[] { typeof(T).Assembly.Location });
                         
                 }
                 if(install || uninstall)
                 {
-                    Console.WriteLine("(done)");
+                    log.Info("(done)");
                     return 0;
                 }
                 if(benchmark)
@@ -215,7 +217,7 @@ namespace StackExchange.NetGain
                     using (var svc = new TcpService("", new EchoProcessor(), factory))
                     {
                         svc.MaxIncomingQuota = -1;
-                        Console.WriteLine("Running benchmark using " + svc.ServiceName + "....");
+                        log.Info("Running benchmark using " + svc.ServiceName + "....");
                         svc.StartService();
                         svc.RunEchoBenchmark(1, 500000, factory);
                         svc.RunEchoBenchmark(50, 10000, factory);
@@ -225,7 +227,7 @@ namespace StackExchange.NetGain
                     return 0;
                 }
 
-                if (Environment.UserInteractive)// user facing
+                if (Environment.UserInteractive)// user facing, explicitly using the Console instead of configured logger
                 {
                     using (var messageProcessor = new T())
                     using (var svc = new TcpService(configuration, messageProcessor, protocolFactory))
@@ -303,7 +305,7 @@ namespace StackExchange.NetGain
             //}
             //watch.Stop();
             //opsPerSecond = watch.ElapsedMilliseconds == 0 ? -1 : (clients * iterations * 1000) / watch.ElapsedMilliseconds;
-            //Console.WriteLine("Total elapsed: {0}ms, {1}ops/s (individual clients)", watch.ElapsedMilliseconds, opsPerSecond);
+            //log.Info("Total elapsed: {0}ms, {1}ops/s (individual clients)", watch.ElapsedMilliseconds, opsPerSecond);
 
 
             var endpoints = Enumerable.Repeat(new IPEndPoint(IPAddress.Loopback, 5999), clients).ToArray();
@@ -325,7 +327,7 @@ namespace StackExchange.NetGain
                 watch.Stop();
             }
             opsPerSecond = watch.ElapsedMilliseconds == 0 ? -1 : (iterations * 1000) / watch.ElapsedMilliseconds;
-            Console.WriteLine("Total elapsed: {0}ms, {1}ops/s (grouped clients)", watch.ElapsedMilliseconds, opsPerSecond);
+            log.Info("Total elapsed: {0}ms, {1}ops/s (grouped clients)", watch.ElapsedMilliseconds, opsPerSecond);
 
 
         }
@@ -351,7 +353,7 @@ namespace StackExchange.NetGain
                     last = client.Execute(message);
                 last.Wait();
                 watch.Stop();
-                //Console.WriteLine("{0}ms", watch.ElapsedMilliseconds);
+                //log.Info("{0}ms", watch.ElapsedMilliseconds);
             }
         }
 

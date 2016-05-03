@@ -11,6 +11,7 @@ using StackExchange.NetGain;
 using StackExchange.NetGain.WebSockets;
 using TcpClient = StackExchange.NetGain.TcpClient;
 using System.Text.RegularExpressions;
+using StackExchange.NetGain.Logging;
 
 namespace ConsoleApplication1
 {
@@ -19,6 +20,9 @@ namespace ConsoleApplication1
         
         static void Main()
         {
+            // Overriding default NoOpLogManager to log to Console instead
+            LogManager.Current = new ConsoleLogManager();
+
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Loopback, 6002);
             using(var server = new TcpServer())
             {
