@@ -14,16 +14,11 @@
     <copyright>Stack Exchange Inc. 2016</copyright>
 
     <dependencies>
-      <group targetFramework="net40">
-        <dependency id="Microsoft.Bcl" version="1.1.9"/>
-        <dependency id="Microsoft.Bcl.Async" version="1.0.168"/>
-      </group>
       <group targetFramework="net45">
       </group>
     </dependencies>
   </metadata>
   <files>
     <file src="StackExchange.NetGain\bin\Release\StackExchange.NetGain*.*" target="lib\net45" />
-    <file src="StackExchange.NetGain\bin\Release\StackExchange.NetGain*.*" target="lib\net40" />
   </files>
 </package>
