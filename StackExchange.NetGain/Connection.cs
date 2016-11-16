@@ -10,6 +10,8 @@ namespace StackExchange.NetGain
 {
     public class Connection
     {
+        private static long _nextId;
+        internal long Id { get; } = Interlocked.Increment(ref _nextId);
         public object UserToken { get; set; }
 
         private IProtocolProcessor protocol;

@@ -1,73 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using System.Diagnostics;
 
 namespace StackExchange.NetGain
 {
-    internal class ConnectionSet : IEnumerable<Connection>
-    {
-        private Connection[] connections = new Connection[10];
-
-        private int count;
-        public int Count
-        {
-            get { return Thread.VolatileRead(ref count); }
-        }
-        public void Add(Connection connection)
-        {
-            lock(this)
-            {
-                count++;
-                for(int i = 0 ; i < connections.Length ;i++)
-                {
-                    if(connections[i] == null)
-                    {
-                        connections[i] = connection;
-                        return;
-                    }
-                }
-                int oldLen = connections.Length;
-                Array.Resize(ref connections, oldLen * 2);
-                connections[oldLen] = connection;
-#if VERBOSE
-                Debug.WriteLine(string.Format("resized ConnectionSet: {0}", connections.Length));
-#endif
-            }
-        }
-        public bool Remove(Connection connection)
-        {
-            lock (this)
-            {
-                for (int i = 0; i < connections.Length; i++)
-                {
-                    if((object)connections[i] == (object)connection)
-                    {
-                        connections[i] = null;
-                        count--;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-        public IEnumerator<Connection> GetEnumerator()
-        {
-            // lock-free, best-efforts enumeration
-            var snapshot = connections;
-            for(int i = 0 ; i < snapshot.Length ; i++)
-            {
-                var conn = snapshot[i];
-                if (conn != null) yield return conn;
-            }
-        }
-    }
-
     public class CircularBuffer<T>
     {
         private int count, origin;

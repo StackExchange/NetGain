@@ -6,6 +6,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Concurrent;
+
 namespace StackExchange.NetGain
 {
     public class TcpServer : TcpHandler
@@ -46,8 +48,9 @@ namespace StackExchange.NetGain
             if (proc != null)
             {
                 Console.WriteLine("{0}\tShutting down connections...", Connection.GetLogIdent());
-                foreach (var conn in allConnections)
+                foreach (var pair in allConnections)
                 {
+                    var conn = pair.Value;
                     try
                     {
                         proc.OnShutdown(ctx, conn); // processor first
@@ -58,8 +61,10 @@ namespace StackExchange.NetGain
                 }
                 Thread.Sleep(100);
             }
-            foreach (var conn in allConnections)
+            
+            foreach (var pair in allConnections)
             {
+                var conn = pair.Value;
                 var socket = conn.Socket;
                 if(socket != null)
                 {
@@ -93,7 +98,7 @@ namespace StackExchange.NetGain
             }
             WriteLog();
         }
-        ConnectionSet allConnections = new ConnectionSet();
+        ConcurrentDictionary<long,Connection> allConnections = new ConcurrentDictionary<long,Connection>();
         
         private System.Threading.Timer timer;
         public int Backlog { get; set; }
@@ -248,7 +253,7 @@ namespace StackExchange.NetGain
         {
             var tmp = messageProcessor;
             if (tmp != null) tmp.OpenConnection(Context, connection);
-            allConnections.Add(connection);
+            allConnections.TryAdd(connection.Id, connection);
             
             StartReading(connection);
         }
@@ -265,7 +270,8 @@ namespace StackExchange.NetGain
         }
         protected internal override void OnClosing(Connection connection)
         {
-            if (allConnections.Remove(connection))
+            Connection found;
+            if (allConnections.TryRemove(connection.Id, out found) && (object)found == (object)connection)
             {
                 var tmp = messageProcessor;
                 if (tmp != null) tmp.CloseConnection(Context, connection);
@@ -356,7 +362,7 @@ namespace StackExchange.NetGain
         {
             // manually dual-threaded; was using Parallel.ForEach, but that caused unconstrained memory growth
             var ctx = Context;
-            using (var iter = allConnections.GetEnumerator())
+            using (var iter = allConnections.Values.GetEnumerator())
             using (var workerDone = new AutoResetEvent(false))
             {
                 ThreadPool.QueueUserWorkItem(x =>
