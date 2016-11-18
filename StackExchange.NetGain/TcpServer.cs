@@ -47,7 +47,7 @@ namespace StackExchange.NetGain
             var proc = MessageProcessor;
             if (proc != null)
             {
-                Console.WriteLine("{0}\tShutting down connections...", Connection.GetLogIdent());
+                Log?.WriteLine("{0}\tShutting down connections...", Connection.GetLogIdent());
                 foreach (var pair in allConnections)
                 {
                     var conn = pair.Value;
@@ -57,7 +57,7 @@ namespace StackExchange.NetGain
                         conn.GracefulShutdown(ctx); // then protocol
                     }
                     catch (Exception ex)
-                    { Console.Error.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
+                    { ErrorLog?.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
                 }
                 Thread.Sleep(100);
             }
@@ -69,9 +69,9 @@ namespace StackExchange.NetGain
                 if(socket != null)
                 {
                     try { socket.Close(); }
-                    catch (Exception ex) { Console.Error.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
+                    catch (Exception ex) { ErrorLog?.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
                     try { ((IDisposable)socket).Dispose(); }
-                    catch (Exception ex) { Console.Error.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
+                    catch (Exception ex) { ErrorLog?.WriteLine("{0}\t{1}", Connection.GetIdent(conn), ex.Message); }
                 }
             }
             if (connectSockets != null)
@@ -85,12 +85,12 @@ namespace StackExchange.NetGain
                     try
                     {
                         endpoint = connectSocket.LocalEndPoint;
-                        Console.WriteLine("{0}\tService stopping: {1}", Connection.GetConnectIdent(endpoint), endpoint);
+                        Log?.WriteLine("{0}\tService stopping: {1}", Connection.GetConnectIdent(endpoint), endpoint);
                         connectSocket.Close();
                     }
-                    catch (Exception ex) { Console.Error.WriteLine("{0}\t{1}", Connection.GetConnectIdent(endpoint), ex.Message); }
+                    catch (Exception ex) { ErrorLog?.WriteLine("{0}\t{1}", Connection.GetConnectIdent(endpoint), ex.Message); }
                     try { ((IDisposable)connectSocket).Dispose(); }
-                    catch (Exception ex) { Console.Error.WriteLine("{0}\t{1}", Connection.GetConnectIdent(endpoint), ex.Message); }
+                    catch (Exception ex) { ErrorLog?.WriteLine("{0}\t{1}", Connection.GetConnectIdent(endpoint), ex.Message); }
                 }
                 connectSockets = null;
                 var tmp = messageProcessor;
@@ -116,7 +116,7 @@ namespace StackExchange.NetGain
             if(tmp != null) tmp.StartProcessor(Context, configuration);
             for (int i = 0; i < endpoints.Length; i++)
             {
-                Console.WriteLine("{0}\tService starting: {1}", Connection.GetConnectIdent(endpoints[i]), endpoints[i]);
+                Log?.WriteLine("{0}\tService starting: {1}", Connection.GetConnectIdent(endpoints[i]), endpoints[i]);
                 EndPoint endpoint = endpoints[i];
                 Socket connectSocket = StartAcceptListener(endpoint);
                 if (connectSocket == null) throw new InvalidOperationException("Unable to start all endpoints");
@@ -155,21 +155,21 @@ namespace StackExchange.NetGain
             var endpoint = connectSockets[i].Item2;
             try
             {
-                Console.Error.WriteLine("Restarting listener on " + endpoint + "...");
+                ErrorLog?.WriteLine("Restarting listener on " + endpoint + "...");
                 var newSocket = StartAcceptListener(endpoint);
                 connectSockets[i] = Tuple.Create(newSocket, endpoint);
                 if (newSocket == null)
                 {
-                    Console.Error.WriteLine("Unable to restart listener on " + endpoint + "...");
+                    ErrorLog?.WriteLine("Unable to restart listener on " + endpoint + "...");
                 }
                 else
                 {
-                    Console.Error.WriteLine("Restarted listener on " + endpoint + "...");
+                    ErrorLog?.WriteLine("Restarted listener on " + endpoint + "...");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Restart failed on " + endpoint + ":" + ex.Message);
+                ErrorLog?.WriteLine("Restart failed on " + endpoint + ":" + ex.Message);
             }
         }
         protected override void OnAcceptFailed(SocketAsyncEventArgs args, Socket socket)
@@ -179,7 +179,7 @@ namespace StackExchange.NetGain
             {
                 base.OnAcceptFailed(args, socket);
 
-                Console.Error.WriteLine("Listener failure: " + args.SocketError);
+                ErrorLog?.WriteLine("Listener failure: " + args.SocketError);
 
                 lock(connectSockets)
                 {
@@ -202,7 +202,7 @@ namespace StackExchange.NetGain
             }
             catch(Exception ex)
             {
-                Console.Error.WriteLine("Epic fail in OnAcceptFailed: " + ex.Message);
+                ErrorLog?.WriteLine("Epic fail in OnAcceptFailed: " + ex.Message);
             }
         }
 
@@ -232,7 +232,7 @@ namespace StackExchange.NetGain
                 return connectSocket;
             } catch(Exception ex)
             {
-                Console.Error.WriteLine("Unable to start listener on " + endpoint.ToString() + ": " + ex.Message);
+                ErrorLog?.WriteLine("Unable to start listener on " + endpoint.ToString() + ": " + ex.Message);
                 return null;
             }
         }
@@ -300,7 +300,7 @@ namespace StackExchange.NetGain
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine("{0}\tHeartbeat: {1}", Connection.GetHeartbeatIdent(), ex.Message);
+                        ErrorLog?.WriteLine("{0}\tHeartbeat: {1}", Connection.GetHeartbeatIdent(), ex.Message);
                     }
                 }
                 ResurrectDeadListeners();

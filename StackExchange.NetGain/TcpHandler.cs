@@ -5,6 +5,7 @@ using System.Threading;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using System.IO;
 
 namespace StackExchange.NetGain
 {
@@ -114,7 +115,7 @@ AcceptMore:
             } 
             catch(Exception ex)
             {
-                Console.Error.WriteLine("{0}\tStartAccept **CRITICAL**: {1}", Connection.GetIdent(args), ex.Message);
+                ErrorLog?.WriteLine("{0}\tStartAccept **CRITICAL**: {1}", Connection.GetIdent(args), ex.Message);
             }
         }
         private void AsyncHandler(object sender, SocketAsyncEventArgs args)
@@ -160,7 +161,7 @@ AcceptMore:
                 }
                 else
                 {
-                    Console.Error.WriteLine("{0}\tForced to drop a connection because the server did not respond", Connection.GetIdent(args));
+                    ErrorLog?.WriteLine("{0}\tForced to drop a connection because the server did not respond", Connection.GetIdent(args));
                     CloseSocket(args);
                 }
             }
@@ -212,7 +213,7 @@ AcceptMore:
                 }
                 else
                 {
-                    Console.Error.WriteLine("{0}\tSocket closed: {1}", Connection.GetIdent(args), args.SocketError);
+                    ErrorLog?.WriteLine("{0}\tSocket closed: {1}", Connection.GetIdent(args), args.SocketError);
                     CloseSocket(args);
                 }
             }
@@ -222,7 +223,7 @@ AcceptMore:
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("{0}\tSend: {1}", Connection.GetIdent(args), ex.Message);
+                ErrorLog?.WriteLine("{0}\tSend: {1}", Connection.GetIdent(args), ex.Message);
                 CloseSocket(args);
             }
         }
@@ -323,7 +324,7 @@ AcceptMore:
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("{0}\tStart-send: {1}", Connection.GetIdent(args), ex.Message);
+                ErrorLog?.WriteLine("{0}\tStart-send: {1}", Connection.GetIdent(args), ex.Message);
                 if (args != null) CloseSocket(args);
             }
         }
@@ -407,7 +408,7 @@ MoreToRead:
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("{0}\tReceive: {1}", Connection.GetIdent(args), ex.Message);
+                ErrorLog?.WriteLine("{0}\tReceive: {1}", Connection.GetIdent(args), ex.Message);
                 CloseSocket(args);
             }
         }
@@ -457,7 +458,7 @@ MoreToRead:
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("{0}\tAccept: {1}", Connection.GetIdent(args), ex.Message);
+                ErrorLog?.WriteLine("{0}\tAccept: {1}", Connection.GetIdent(args), ex.Message);
                 Kill(newSocket);
             }
             if (startMore)
@@ -495,7 +496,7 @@ MoreToRead:
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("{0}\tClose: {1}", Connection.GetIdent(args), ex.Message);
+                    ErrorLog?.WriteLine("{0}\tClose: {1}", Connection.GetIdent(args), ex.Message);
                 }
                 
             }
@@ -521,13 +522,20 @@ MoreToRead:
         {
             return 0;
         }
+
+        public TextWriter Log { get; set; } = Console.Out;
+        public TextWriter ErrorLog { get; set; } = Console.Error;
         protected void WriteLog()
         {
-            string newLog = BuildLog();
-            if (newLog != lastLog)
+            var log = Log;
+            if (log != null)
             {
-                lastLog = newLog;
-                Console.WriteLine("{0}\t{1}", Connection.GetLogIdent(), newLog);
+                string newLog = BuildLog();
+                if (newLog != lastLog)
+                {
+                    lastLog = newLog;
+                    log.WriteLine("{0}\t{1}", Connection.GetLogIdent(), newLog);
+                }
             }
         }
         public virtual string BuildLog()
@@ -578,7 +586,7 @@ MoreToRead:
 
         public void WriteLog(string line, Connection connection = null)
         {
-            Console.WriteLine("{0}\t{1}", connection == null ? Connection.GetAuditTimestamp() : Connection.GetIdent(connection), line);
+            Log?.WriteLine("{0}\t{1}", connection == null ? Connection.GetAuditTimestamp() : Connection.GetIdent(connection), line);
         }
     }
     internal sealed class CloseSocketException : Exception { }

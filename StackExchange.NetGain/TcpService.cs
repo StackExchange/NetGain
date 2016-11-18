@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
+using System.IO;
 
 namespace StackExchange.NetGain
 {
@@ -37,12 +38,15 @@ namespace StackExchange.NetGain
         private TcpServer server;
         private IMessageProcessor processor;
         private IProtocolFactory factory;
+
+        public TextWriter ErrorLog { get; set; } = Console.Error;
+        public TextWriter Log { get; set; } = Console.Out;
         public void StartService()
         {
             if (processor == null) throw new ObjectDisposedException(GetType().Name);
             if(server == null)
             {
-                var tmp = new TcpServer();
+                var tmp = new TcpServer() { Log = Log, ErrorLog = ErrorLog };
                 tmp.MessageProcessor = processor;
                 tmp.ProtocolFactory = factory;
                 tmp.Backlog = 100;
@@ -69,7 +73,7 @@ namespace StackExchange.NetGain
                             tmp.Start(Configuration, Endpoints);
                         } catch (Exception ex)
                         {
-                            Console.Error.WriteLine(ex.Message);
+                            ErrorLog?.WriteLine(ex.Message);
                             Stop(); // argh!
                         }
                     });
@@ -136,13 +140,13 @@ namespace StackExchange.NetGain
         {
             StopService();
         }
-        private static void LogWhileDying(object ex)
+        private static void LogWhileDying(object ex, TextWriter errorLog)
         {
             Exception typed = ex as Exception;
-            Console.Error.WriteLine(typed == null ? Convert.ToString(ex) : typed.Message);
+            errorLog?.WriteLine(typed == null ? Convert.ToString(ex) : typed.Message);
             if(typed != null)
             {
-                Console.Error.WriteLine(typed.StackTrace);
+                errorLog?.WriteLine(typed.StackTrace);
             }
 #if DEBUG
             if (Debugger.IsAttached)
@@ -156,10 +160,13 @@ namespace StackExchange.NetGain
 
         public static int Run<T>(string configuration, string[] args, IPEndPoint[] endpoints, IProtocolFactory protocolFactory)
             where T : IMessageProcessor, new()
+            => Run<T>(configuration, args, endpoints, protocolFactory, Console.Out, Console.Error);
+        public static int Run<T>(string configuration, string[] args, IPEndPoint[] endpoints, IProtocolFactory protocolFactory, TextWriter log, TextWriter errorLog)
+            where T : IMessageProcessor, new()
         {
             try
             {
-                AppDomain.CurrentDomain.UnhandledException += (s, e) => LogWhileDying(e.ExceptionObject);
+                AppDomain.CurrentDomain.UnhandledException += (s, e) => LogWhileDying(e.ExceptionObject, errorLog);
                 string name = null;
                 bool uninstall = false, install = false, benchmark = false, hasErrors = false;
                 for (int i = 0; i < args.Length; i++ )
@@ -175,7 +182,7 @@ namespace StackExchange.NetGain
                                 name = args[i].Substring(3);
                             } else
                             {
-                                Console.Error.WriteLine("Unknown argument: " + args[i]);
+                                errorLog?.WriteLine("Unknown argument: " + args[i]);
                                 hasErrors = true;
                             }
                             break;
@@ -183,30 +190,30 @@ namespace StackExchange.NetGain
                 }
                 if (hasErrors)
                 {
-                    Console.Error.WriteLine("Support flags:");
-                    Console.Error.WriteLine("-i\tinstall service");
-                    Console.Error.WriteLine("-u\tuninstall service");
-                    Console.Error.WriteLine("-b\tbenchmark");
-                    Console.Error.WriteLine("-n:name\toverride service name");
-                    Console.Error.WriteLine("(no args) execute in console");
+                    errorLog?.WriteLine("Support flags:");
+                    errorLog?.WriteLine("-i\tinstall service");
+                    errorLog?.WriteLine("-u\tuninstall service");
+                    errorLog?.WriteLine("-b\tbenchmark");
+                    errorLog?.WriteLine("-n:name\toverride service name");
+                    errorLog?.WriteLine("(no args) execute in console");
                     return -1;
                 }
                 if(uninstall)
                 {
-                    Console.WriteLine("Uninstalling service...");
+                    log?.WriteLine("Uninstalling service...");
                     InstallerServiceName = name;
                     ManagedInstallerClass.InstallHelper(new string[] { "/u", typeof(T).Assembly.Location });
                 }
                 if(install)
                 {
-                    Console.WriteLine("Installing service...");
+                    log?.WriteLine("Installing service...");
                     InstallerServiceName = name;
                     ManagedInstallerClass.InstallHelper(new string[] { typeof(T).Assembly.Location });
                         
                 }
                 if(install || uninstall)
                 {
-                    Console.WriteLine("(done)");
+                    log?.WriteLine("(done)");
                     return 0;
                 }
                 if(benchmark)
@@ -215,11 +222,11 @@ namespace StackExchange.NetGain
                     using (var svc = new TcpService("", new EchoProcessor(), factory))
                     {
                         svc.MaxIncomingQuota = -1;
-                        Console.WriteLine("Running benchmark using " + svc.ServiceName + "....");
+                        log?.WriteLine("Running benchmark using " + svc.ServiceName + "....");
                         svc.StartService();
-                        svc.RunEchoBenchmark(1, 500000, factory);
-                        svc.RunEchoBenchmark(50, 10000, factory);
-                        svc.RunEchoBenchmark(100, 5000, factory);
+                        svc.RunEchoBenchmark(1, 500000, factory, log);
+                        svc.RunEchoBenchmark(50, 10000, factory, log);
+                        svc.RunEchoBenchmark(100, 5000, factory, log);
                         svc.StopService();
                     }
                     return 0;
@@ -228,22 +235,26 @@ namespace StackExchange.NetGain
                 if (Environment.UserInteractive)// user facing
                 {
                     using (var messageProcessor = new T())
-                    using (var svc = new TcpService(configuration, messageProcessor, protocolFactory))
+                    using (var svc = new TcpService(configuration, messageProcessor, protocolFactory) {
+                        ErrorLog = errorLog, Log = log
+                    })
                     {
                         svc.Endpoints = endpoints;
                         if (!string.IsNullOrEmpty(name)) svc.ActualServiceName = name;
                         svc.StartService();
-                        Console.WriteLine("Running " + svc.ActualServiceName +
+                        log?.WriteLine("Running " + svc.ActualServiceName +
                                             " in interactive mode; press any key to quit");
                         Console.ReadKey();
-                        Console.WriteLine("Exiting...");
+                        log?.WriteLine("Exiting...");
                         svc.StopService();
                     }
                     return 0;
                 }
                 else
                 {
-                    var svc = new TcpService(configuration, new T(), protocolFactory);
+                    var svc = new TcpService(configuration, new T(), protocolFactory) {
+                        ErrorLog = errorLog, Log = log
+                    };
                     svc.Endpoints = endpoints;
                     ServiceBase.Run(svc);
                     return 0;
@@ -251,7 +262,7 @@ namespace StackExchange.NetGain
             }
             catch (Exception ex)
             {
-                LogWhileDying(ex);
+                LogWhileDying(ex, errorLog);
                 return -1;
             }
         }
@@ -279,7 +290,7 @@ namespace StackExchange.NetGain
 
             void IMessageProcessor.OnShutdown(NetContext context, Connection conn) { }
         }
-        internal void RunEchoBenchmark(int clients, int iterations, IProtocolFactory factory)
+        internal void RunEchoBenchmark(int clients, int iterations, IProtocolFactory factory, TextWriter log)
         {
             Thread[] threads = new Thread[clients];
             int remaining = clients;
@@ -303,7 +314,7 @@ namespace StackExchange.NetGain
             //}
             //watch.Stop();
             //opsPerSecond = watch.ElapsedMilliseconds == 0 ? -1 : (clients * iterations * 1000) / watch.ElapsedMilliseconds;
-            //Console.WriteLine("Total elapsed: {0}ms, {1}ops/s (individual clients)", watch.ElapsedMilliseconds, opsPerSecond);
+            //log?.WriteLine("Total elapsed: {0}ms, {1}ops/s (individual clients)", watch.ElapsedMilliseconds, opsPerSecond);
 
 
             var endpoints = Enumerable.Repeat(new IPEndPoint(IPAddress.Loopback, 5999), clients).ToArray();
@@ -325,7 +336,7 @@ namespace StackExchange.NetGain
                 watch.Stop();
             }
             opsPerSecond = watch.ElapsedMilliseconds == 0 ? -1 : (iterations * 1000) / watch.ElapsedMilliseconds;
-            Console.WriteLine("Total elapsed: {0}ms, {1}ops/s (grouped clients)", watch.ElapsedMilliseconds, opsPerSecond);
+            log?.WriteLine("Total elapsed: {0}ms, {1}ops/s (grouped clients)", watch.ElapsedMilliseconds, opsPerSecond);
 
 
         }
@@ -351,7 +362,7 @@ namespace StackExchange.NetGain
                     last = client.Execute(message);
                 last.Wait();
                 watch.Stop();
-                //Console.WriteLine("{0}ms", watch.ElapsedMilliseconds);
+                //log?.WriteLine("{0}ms", watch.ElapsedMilliseconds);
             }
         }
 

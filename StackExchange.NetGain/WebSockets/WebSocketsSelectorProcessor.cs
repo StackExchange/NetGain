@@ -170,7 +170,7 @@ namespace StackExchange.NetGain.WebSockets
                         {
                             sb.AppendFormat("{0}:\t{1}", key, headers[key]).AppendLine();
                         }
-                        Console.Error.WriteLine(sb);
+                        context?.Handler?.ErrorLog?.WriteLine(sb);
                     }
                     throw new InvalidOperationException("Request was not a web-socket upgrade request; connection: " + headers["Connection"] + ", upgrade: " + headers["Upgrade"]);
                 }
