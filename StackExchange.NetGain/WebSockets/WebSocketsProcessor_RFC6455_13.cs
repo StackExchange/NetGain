@@ -193,7 +193,7 @@ namespace StackExchange.NetGain.WebSockets
                         // send a "pong" with the same payload
                         var pong = new WebSocketsFrame();
                         if (IsClient) pong.Mask = CreateMask();
-                        pong.OpCode = WebSocketsFrame.OpCodes.Binary;
+                        pong.OpCode = WebSocketsFrame.OpCodes.Pong;
                         pong.PayloadLength = frame.PayloadLength;
                         if(frame.Payload != null)
                         {
