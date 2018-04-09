@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>StackExchange.NetGain.Tests</AssemblyName>
+    <TargetFrameworks>net462</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+
+    <ProjectReference Include="..\..\src\StackExchange.NetGain\StackExchange.NetGain.csproj" />
+    <PackageReference Include="NUnit" Version="2.6.2" />
+    <PackageReference Include="NUnitTestAdapter" Version="2.0.0" />
+  </ItemGroup>
+</Project>
