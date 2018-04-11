@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>StackExchange.NetGain</AssemblyName>
+    <Authors>Stack Exchange Inc., marc.gravell, gdalgas, nick.craver</Authors>
+    <Description>High performance Web Socket server powering Stack Overflow</Description>
+    <PacakgeTags>socket server websockets</PacakgeTags>
+    <Copyright>Stack Exchange Inc. 2018</Copyright>
+    <PacakgeProjectUrl>https://github.com/StackExchange/NetGain</PacakgeProjectUrl>
+    <PacakgeLicenseUrl>https://raw.github.com/StackExchange/NetGain/master/LICENSE</PacakgeLicenseUrl>
+    <TargetFrameworks>net462</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+</Project>
