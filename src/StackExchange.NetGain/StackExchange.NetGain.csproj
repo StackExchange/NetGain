@@ -21,4 +21,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.17" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
