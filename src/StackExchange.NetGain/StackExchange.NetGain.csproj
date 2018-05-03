@@ -8,6 +8,7 @@
     <PacakgeProjectUrl>https://github.com/StackExchange/NetGain</PacakgeProjectUrl>
     <PacakgeLicenseUrl>https://raw.github.com/StackExchange/NetGain/master/LICENSE</PacakgeLicenseUrl>
     <TargetFrameworks>net462</TargetFrameworks>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
