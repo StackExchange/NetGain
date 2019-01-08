@@ -1,5 +1,19 @@
 ## Welcome to StackExchange.NetGain! ##
 
+# Warning: reduced maintenance
+
+A few things have changed since this library was written:
+
+- "pipelines" have become the new hotness for high performance low overhead IO code - [see my 3-and-a-bit-part series here](https://blog.marcgravell.com/2018/07/pipe-dreams-part-1.html)
+- "Kestrel", combined with pipelines, now provides a great hosting experience for high volume servers
+- HTTP/2 (and above) have reduced the usefulness of web-sockets (one of the main drivers for me and NetGain), since the web-sockets drafts for HTTP/2 never really "took"
+
+As of late 2018, Stack Overflow (Stack Exchange) have migrated away from NetGain, instead using Kestrel's **inbuilt** web-socket support over HTTP/1.*; it is entirely possible that as we delve more into HTTP/2, we look more in the direction of [SSE](https://en.wikipedia.org/wiki/Server-sent_events) (`EventSource`).
+
+So: we're not actively working with, or working on, this library. If you have a burning desire to take it further as an official maintainer (perhaps with some tweaks to naming, obviously) - let me know!
+
+---
+
 **NetGain** supports:
 
 - **[RFC 6455](https://tools.ietf.org/html/rfc6455)**
